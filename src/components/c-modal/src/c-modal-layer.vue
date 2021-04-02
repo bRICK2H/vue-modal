@@ -1,5 +1,5 @@
 <template>
-  <div class="modal-layer" :ref="name" v-show="isShow">
+  <div class="modal-layer" :ref="name" v-if="isShow">
 
     <div class="modal-content modal-layer__modal-content"
       :style="setStylePositionModal"
@@ -78,10 +78,19 @@ export default {
     },
   },
   watch: {
-    isShow() {
+    async isShow(show) {
       const countainer = document.getElementById('modal-container');
-      countainer.appendChild(this.$refs[this.name])
-      console.log(this.$modalContainer)
+
+      if (show) {
+        await this.$nextTick()
+        countainer.appendChild(this.$refs[this.name])
+      } else {
+        console.log('del')
+        // this.$forceUpdate()
+        // countainer.removeChild(this.$el)
+        // this.$destroy()
+        // this.isShow = false;
+      }
     }
   },
   created() {
@@ -97,10 +106,16 @@ export default {
     })
     
     document.body.addEventListener('keyup', e => {
+      // if (this.isActive) this.$cModal.close(this.name)
       if (this.isActive) this.$cModal.close(this.name)
     })
-
   },
+  // beforeDestroy() {
+  //   console.log('beforeDestroy')
+  // },
+  // destroyed() {
+  //   console.log('destroyed')
+  // }
 }
 </script>
 
