@@ -1,121 +1,132 @@
 <template>
-  <div class="modal-layer" :ref="name" v-if="isShow">
+	<div class="modal-layer" :ref="name" v-if="isShow">
 
-    <div class="modal-content modal-layer__modal-content"
-      :style="setStylePositionModal"
-      :class="{ 'modal-content--active': isActive }"
-      @mousedown="$cModal.active(name)"
-    >
-      <div class="modal-content__header"
-        @mousedown="grab"
-        @mouseup="leave"
-      >
-        {{ headerName }}
-      </div>
-      <div class="modal-content__body">
-        <component :is="null" />
-      </div>
-    </div>
-    
-  </div>
+		<div class="modal-content modal-layer__modal-content"
+			:style="[setStylePositionModal, setStylePositionLevelModal]"
+			:class="{ 'modal-content--active': isActive }"
+			@mousedown="$cModal.active(name)"
+		>
+			<div class="modal-content__header"
+			@mousedown="grab"
+			@mouseup="leave"
+			>
+			{{ headerName }} {{ id }}
+			</div>
+			<div class="modal-content__body">
+			<component :is="null" />
+			</div>
+		</div>
+		
+	</div>
 </template>
 
 <script>
 
 export default {
-  name: `Modal`,
-  components: {},
-  props: {
-    name: String,
-    headerName: {
-      type: String,
-      default: ''
-    },
-    isLayer: {
-      type: Boolean,
-      default: false
-    },
-    top: {
-      type: Number,
-      default: 50
-    },
-    left: {
-      type: Number,
-      default: 50
-    }
-  },
-  data: () => ({
-    isShow: false,
-    isActive: false,
-    
-    isGrab: false,
-    units: '%',
-    fTop: 0,
-    fLeft: 0,
-    offsetTop: 0,
-    offsetLeft: 0,
-    bodyComponent: null
-  }),
-  computed: {
-    setStylePositionModal() {
-      return { top: `${this.fTop}${this.units}`, left: `${this.fLeft}${this.units}` }
-    },
-  },
-  methods: {
-    open() {
-      this.isShow = true;
-    },
-    grab(event) {
-      this.isGrab = true;
-      this.units = 'px';
-      this.offsetTop = event.layerY;
-      this.offsetLeft = event.layerX;
-      this.fTop = event.clientY - event.layerY
-      this.fLeft = event.clientX - event.layerX
-    },
-    leave() {
-      this.isGrab = false;
-    },
-  },
-  watch: {
-    async isShow(show) {
-      const countainer = document.getElementById('modal-container');
+	name: `Modal`,
+	components: {},
+	props: {
+		name: String,
+		headerName: {
+			type: String,
+			default: ''
+		},
+		isLayer: {
+			type: Boolean,
+			default: false
+		},
+		top: {
+			type: Number,
+			default: 50
+		},
+		left: {
+			type: Number,
+			default: 50
+		}
+	},
+	data: () => ({
+		isShow: false,
+		isActive: false,
+		id: 0,
+		zIndex: 999,
+		
+		isGrab: false,
+		units: '%',
+		fTop: 0,
+		fLeft: 0,
+		offsetTop: 0,
+		offsetLeft: 0,
+		bodyComponent: null
+	}),
+	computed: {
+		setStylePositionModal() {
+			return { top: `${this.fTop}${this.units}`, left: `${this.fLeft}${this.units}` }
+		},
+		setStylePositionLevelModal() {
+			return { zIndex:  `${this.zIndex + this.id}` }
+		}
+	},
+	methods: {
+		open() {
+			this.isShow = true;
+		},
+		grab(event) {
+			this.isGrab = true;
+			this.units = 'px';
+			this.offsetTop = event.layerY;
+			this.offsetLeft = event.layerX;
+			this.fTop = event.clientY - event.layerY
+			this.fLeft = event.clientX - event.layerX
+		},
+		leave() {
+			this.isGrab = false;
+		},
+	},
+	watch: {
+		async isShow(show) {
+			const container = document.getElementById('modal-container');
 
-      if (show) {
-        await this.$nextTick()
-        countainer.appendChild(this.$refs[this.name])
-      } else {
-        console.log('del')
-        // this.$forceUpdate()
-        // countainer.removeChild(this.$el)
-        // this.$destroy()
-        // this.isShow = false;
-      }
-    }
-  },
-  created() {
-    this.$cModal.created(this)
-    this.fTop = this.top
-    this.fLeft = this.left
-    
-    document.body.addEventListener('mousemove', e => {
-      if (this.isGrab) {
-        this.fTop = e.clientY - this.offsetTop
-        this.fLeft = e.clientX - this.offsetLeft
-      }
-    })
-    
-    document.body.addEventListener('keyup', e => {
-      // if (this.isActive) this.$cModal.close(this.name)
-      if (this.isActive) this.$cModal.close(this.name)
-    })
-  },
-  // beforeDestroy() {
-  //   console.log('beforeDestroy')
-  // },
-  // destroyed() {
-  //   console.log('destroyed')
-  // }
+			if (show) {
+			await this.$nextTick()
+			container.appendChild(this.$refs[this.name])
+			} else {
+			console.log('del')
+			// this.$forceUpdate()
+			// container.removeChild(this.$el)
+			// this.$destroy()
+			// this.isShow = false;
+			}
+		},
+	},
+	created() {
+		this.$cModal.created(this)
+		this.fTop = this.top
+		this.fLeft = this.left
+		
+		document.body.addEventListener('mousemove', e => {
+			if (this.isGrab) {
+			this.fTop = e.clientY - this.offsetTop
+			this.fLeft = e.clientX - this.offsetLeft
+			}
+		})
+		
+		document.body.addEventListener('keyup', e => {
+			// if (this.isActive) this.$cModal.close(this.name)
+			if (this.isActive) {
+			// console.log('all active', this.isActive)
+				// this.$el.remove()
+				// this.isActive = false
+				// this.isShow = false
+				this.$cModal.close(this.name)
+			}
+		})
+	},
+	// beforeDestroy() {
+	//   console.log('beforeDestroy')
+	// },
+	// destroyed() {
+	//   console.log('destroyed')
+	// }
 }
 </script>
 
@@ -123,7 +134,7 @@ export default {
 .modal-layer {
   &__modal-content {
     position: absolute;
-    z-index: 999;
+   //  z-index: 999;
     user-select: none;
   }
 }
