@@ -14,13 +14,11 @@
     <c-modal
       name="header1"
       headerName="header1"
-      :isLayer="true"
       :top="30"
     />
     <c-modal
       name="header2"
       headerName="header2"
-      :isLayer="true"
       :top="20"
       :left="20"
     />
@@ -30,7 +28,22 @@
       :isLayer="true"
       :top="70"
       :left="70"
-    />
+    >
+
+      <div>
+        content3
+        <c-modal
+          name="header4"
+          headerName="header4"
+          :top="70"
+          :left="40"
+        />
+        <div class="block-btn">
+          <button @click="open('header4')">Open4</button>
+        </div>
+      </div>
+
+    </c-modal>
   </div>
 </template>
 
