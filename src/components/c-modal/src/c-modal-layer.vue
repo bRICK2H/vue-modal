@@ -1,5 +1,8 @@
 <template>
-	<div class="modal-layer" :ref="name" v-if="isShow">
+	<div class="modal-layer" :ref="name" v-if="isShow"
+		@keyup.stop="close"
+		:tabindex="id"
+	>
 
 		<div class="modal-content modal-layer__modal-content"
 			:style="[setStylePositionModal, setStylePositionLevelModal]"
@@ -7,16 +10,16 @@
 			@mousedown="$cModal.active(name)"
 		>
 			<div class="modal-content__header"
-			@mousedown="grab"
-			@mouseup="leave"
+				@mousedown="grab"
+				@mouseup="leave"
 			>
-			{{ headerName }} {{ id }}
+				{{ headerName }} {{ id }}
 			</div>
 			<div class="modal-content__body">
-			<component :is="null" />
+				<component :is="null" />
 			</div>
 		</div>
-		
+			
 	</div>
 </template>
 
@@ -70,6 +73,9 @@ export default {
 		open() {
 			this.isShow = true;
 		},
+		close() {
+			this.$cModal.close(this.id)
+		},
 		grab(event) {
 			this.isGrab = true;
 			this.units = 'px';
@@ -87,14 +93,9 @@ export default {
 			const container = document.getElementById('modal-container');
 
 			if (show) {
-			await this.$nextTick()
-			container.appendChild(this.$refs[this.name])
-			} else {
-			console.log('del')
-			// this.$forceUpdate()
-			// container.removeChild(this.$el)
-			// this.$destroy()
-			// this.isShow = false;
+				await this.$nextTick()
+				container.appendChild(this.$refs[this.name])
+				this.$refs[this.name].focus()
 			}
 		},
 	},
@@ -109,24 +110,7 @@ export default {
 			this.fLeft = e.clientX - this.offsetLeft
 			}
 		})
-		
-		document.body.addEventListener('keyup', e => {
-			// if (this.isActive) this.$cModal.close(this.name)
-			if (this.isActive) {
-			// console.log('all active', this.isActive)
-				// this.$el.remove()
-				// this.isActive = false
-				// this.isShow = false
-				this.$cModal.close(this.name)
-			}
-		})
 	},
-	// beforeDestroy() {
-	//   console.log('beforeDestroy')
-	// },
-	// destroyed() {
-	//   console.log('destroyed')
-	// }
 }
 </script>
 
@@ -134,7 +118,6 @@ export default {
 .modal-layer {
   &__modal-content {
     position: absolute;
-   //  z-index: 999;
     user-select: none;
   }
 }

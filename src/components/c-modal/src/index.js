@@ -2,8 +2,6 @@ import CModalLayer from './c-modal-layer.vue'
 
 export default {
 	install(Vue) {
-		Vue.prototype.$modalContainerActive = []
-		
 		const container = document.createElement('c-modal-container')
 		container.id = 'modal-container'
 		document.body.appendChild(container)
@@ -32,7 +30,6 @@ export default {
 
 				this.active(name)
 				currVue.open()
-				console.log('open: ', this.storageInstances)
 			}
 
 			active(name) {
@@ -46,35 +43,27 @@ export default {
 
 				this.storageInstances = tmp.map((curr, i) => {
 					curr.id = i
-					console.log('act: ', curr.isActive)
 					return curr
 				})
 			}
 
-			close(name) {
-				console.log('close name: ', name, this.storageInstances)
-				const activeIndex = this.storageInstances.findIndex(curr => curr.name === name)
-				if (activeIndex !== -1) {
-					// console.log('activeIndes: ', activeIndex)
-					this.storageInstances[activeIndex].isShow = false
-					// this.vm.$delete(this.storageInstances, activeIndex)
-					this.storageInstances.splice(activeIndex, 1)
-				}
-				
-				// const lastIndex = this.storageInstances.length - 1
-				// this.storageInstances[lastIndex].isShow = false
-				// this.vm.$delete(this.storageInstances, lastIndex)
+			close(id) {
+				this.storageInstances[id].isActive = false
+				this.storageInstances[id].isShow = false
+				this.storageInstances.splice(id, 1)
+
 				if (this.storageInstances.length) {
-					setTimeout(() => {
-						this.storageInstances[this.storageInstances.length - 1].isActive = true
-						console.log('close: ', this.storageInstances)
+					const nextInstance = this.storageInstances[this.storageInstances.length - 1],
+							ref = nextInstance.$refs,
+							nextElement = ref[Object.keys(ref)]
 
-					}, 100)
+					nextInstance.isActive = true
+					nextElement.focus()
 				}
-
 			}
 		}
 
+		Vue.prototype.$modalContainerActive = []
 		Vue.prototype.$cModal = new Modal
 		Vue.component('c-modal', CModalLayer)
 	}
