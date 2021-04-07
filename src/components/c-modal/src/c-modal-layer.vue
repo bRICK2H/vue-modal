@@ -5,7 +5,7 @@
 		:tabindex="id"
 		:class="setClassActiveLayerModal"
 		:style="setStylePositionLevelLayerModal"
-		@keyup="$cModal.close(id)">
+		@keyup="$cModal.close(name)">
 
 		<div class="modal-content modal-layer__modal-content"
 			:style="[setStylePositionContentModal, setStylePositionLevelModal]"
@@ -19,7 +19,7 @@
 				{{ headerName }}
 
 				<span class="modal-header__icon-close" @mousedown.stop=""
-					@click="isActive ? $cModal.close(id) : $cModal.active(name)">
+					@click="isActive ? $cModal.close(name) : $cModal.active(name)">
 					<c-close />
 				</span>
 			</div>
@@ -139,14 +139,14 @@
 		border-radius: 4px;
 		background: rgb(241, 241, 241);
 		box-shadow: 0 7px 25px -3.5px rgb(131, 131, 131);
-		filter: blur(.8px);
+		filter: blur(.5px);
 		display: flex;
 		flex-direction: column;
 		transform: translate(-50%, -50%);
 		transition: box-shadow .2s;
 
 		&--active {
-			background: rgb(247, 247, 247);
+			background: rgb(253, 250, 250);
 			box-shadow: 0 15px 50px -7px #000;
 			filter: blur(0);
 		}
