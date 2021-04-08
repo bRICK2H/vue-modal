@@ -38,7 +38,7 @@
           :top="70"
           :left="40"
         >
-          <!-- <c-modal
+          <c-modal
             name="header5"
             headerName="header5"
             :top="50"
@@ -46,7 +46,7 @@
           />
           <div class="block-btn">
             <button class="btn" @click="open('header5')">Open5</button>
-          </div> -->
+          </div>
         </c-modal>
         <div class="block-btn">
           <button class="btn" @click="open('header4')">Open4</button>

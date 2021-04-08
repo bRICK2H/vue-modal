@@ -46,39 +46,83 @@ export default {
 			close(name) {
 
 				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
-				const CHILD_INDEX = this.stateModals[CURR_INDEX].$children.reduce((acc, modal) => {
-					if ('name' in modal) {
-						const CHILD_INDEX = this.stateModals.findIndex(item => item.name === modal.name)
-						acc = this.stateModals[CHILD_INDEX].isShow ? CHILD_INDEX : -1
+				const MODALS_HELL = []
+				
+				const gen = function* (stateModals, currModal) {
+					if (currModal) {
+						const CHILD_INDEX = currModal.$children.reduce((acc, modal) => {
+							if ('name' in modal) {
+								const CHILD_INDEX = stateModals.findIndex(item => item.name === modal.name)
+								acc = currModal.isShow ? CHILD_INDEX : -1
+							}
+	
+							return acc
+						}, -1)
+
+						yield CHILD_INDEX
+						
+						// if (CHILD_INDEX !== -1 && stateModals[CHILD_INDEX].isShow) {
+						// 	console.log('good')
+						// 	console.log(stateModals[CHILD_INDEX])
+						// 	return
+						// } else if (CHILD_INDEX === -1) {
+						// 	console.log('else ch')
+						// }
+
+						MODALS_HELL.unshift(currModal)
+						yield* gen(stateModals, stateModals[CHILD_INDEX])
+					} else {
+						console.log('else', MODALS_HELL)
+						MODALS_HELL.forEach((curr, i) => {
+							setTimeout(() => {
+								curr.isShow = false;
+							}, i * 100)
+						})
 					}
+				
+				}
 
-					return acc
-				}, -1)
+				const iterator = gen(this.stateModals, this.stateModals[CURR_INDEX])
+
+				for(const item of iterator) {
+					console.log('item: ', item, iterator)
+				}
+				
+				
+				// nested
+				// const CHILD_INDEX = this.stateModals[CURR_INDEX].$children.reduce((acc, modal) => {
+				// 	if ('name' in modal) {
+				// 		const CHILD_INDEX = this.stateModals.findIndex(item => item.name === modal.name)
+				// 		acc = this.stateModals[CHILD_INDEX].isShow ? CHILD_INDEX : -1
+				// 	}
+
+				// 	return acc
+				// }, -1)
 
 
-				new Promise((resolve) => {
-					if (CHILD_INDEX !== -1) {
-						this.stateModals[CHILD_INDEX].isShow = false
-					} 
+				// new Promise((resolve) => {
+				// 	if (CHILD_INDEX !== -1) {
+				// 		this.stateModals[CHILD_INDEX].isShow = false
+				// 	} 
 
-					resolve()
-				}).then(() => {
-					this.stateModals[CURR_INDEX].isActive = false
-					this.stateModals[CURR_INDEX].isShow = false
-					this.stateModals.unshift(...this.stateModals.splice(CURR_INDEX, 1))
+				// 	resolve()
+				// }).then(() => {
+				// 	this.stateModals[CURR_INDEX].isActive = false
+				// 	this.stateModals[CURR_INDEX].isShow = false
+				// 	this.stateModals.unshift(...this.stateModals.splice(CURR_INDEX, 1))
 					
-					const CURR_ACTIVE_INDEX = this.stateModals
-						.map(curr => curr.isShow)
-						.lastIndexOf(true)
+				// 	const CURR_ACTIVE_INDEX = this.stateModals
+				// 		.map(curr => curr.isShow)
+				// 		.lastIndexOf(true)
 
-					if (CURR_ACTIVE_INDEX !== -1) {
-						this.stateModals[CURR_ACTIVE_INDEX].isActive = true
-						const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-							NEXT_ELEMENT = REF[Object.keys(REF)]
+				// 	if (CURR_ACTIVE_INDEX !== -1) {
+				// 		this.stateModals[CURR_ACTIVE_INDEX].isActive = true
+				// 		const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
+				// 			NEXT_ELEMENT = REF[Object.keys(REF)]
 
-						NEXT_ELEMENT.focus()
-					}
-				})
+				// 		NEXT_ELEMENT.focus()
+				// 	}
+				// })
 
 			}
 		}
