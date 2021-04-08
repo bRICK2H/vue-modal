@@ -1,13 +1,13 @@
 <template>
   <div id="app">
     <div class="block-btn">
-      <button @click="open('header1')">Open</button>
+      <button class="btn" @click="open('header1')">Open</button>
     </div>
     <div class="block-btn">
-      <button @click="open('header2')">Open2</button>
+      <button class="btn" @click="open('header2')">Open2</button>
     </div>
     <div class="block-btn">
-      <button @click="open('header3')">Open3</button>
+      <button class="btn" @click="open('header3')">Open3</button>
     </div>
 
     
@@ -25,7 +25,7 @@
     <c-modal
       name="header3"
       headerName="header3"
-      :isLayer="true"
+      :isLayer="false"
       :top="70"
       :left="70"
     >
@@ -37,9 +37,19 @@
           headerName="header4"
           :top="70"
           :left="40"
-        />
+        >
+          <!-- <c-modal
+            name="header5"
+            headerName="header5"
+            :top="50"
+            :left="20"
+          />
+          <div class="block-btn">
+            <button class="btn" @click="open('header5')">Open5</button>
+          </div> -->
+        </c-modal>
         <div class="block-btn">
-          <button @click="open('header4')">Open4</button>
+          <button class="btn" @click="open('header4')">Open4</button>
         </div>
       </div>
 
@@ -78,8 +88,12 @@ export default {
   margin: auto;
   display: inline-flex;
   justify-content: center;
+}
+.btn {
+  display: block;
   padding: 10px;
   border-radius: 10px;
+  border: none;
   box-shadow: 0 0 30px 1px #000;
   background: #fff;
 }

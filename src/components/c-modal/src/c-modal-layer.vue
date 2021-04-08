@@ -5,12 +5,12 @@
 		:tabindex="id"
 		:class="setClassActiveLayerModal"
 		:style="setStylePositionLevelLayerModal"
-		@keyup="$cModal.close(name)">
+		@keyup.esc="$cModal.close(name)">
 
 		<div class="modal-content modal-layer__modal-content"
 			:style="[setStylePositionContentModal, setStylePositionLevelModal]"
 			:class="setClassActiveContentModal"
-			@mousedown="$cModal.active(name)"
+			@mousedown="activate($event.target)"
 		>
 			<div class="modal-header modal-content__modal-header"
 				@mousedown="grab"
@@ -18,8 +18,10 @@
 			>
 				{{ headerName }}
 
-				<span class="modal-header__icon-close" @mousedown.stop=""
-					@click="isActive ? $cModal.close(name) : $cModal.active(name)">
+				<span class="modal-header__icon-close"
+					@click="isActive ? $cModal.close(name) : $cModal.active(name)"
+					@mousedown.stop=""
+				>
 					<c-close />
 				</span>
 			</div>
@@ -87,6 +89,12 @@
 			}
 		},
 		methods: {
+			activate(target) {
+				if (target.classList.contains('modal-header')
+						|| target.classList.contains('modal-body')) {
+					this.$cModal.active(this.name)
+				}
+			},
 			grab(event) {
 				this.isGrab = true;
 				this.units = 'px';
