@@ -89,6 +89,75 @@ export default {
 				}
 				
 				
+				// console.log('before: ', this.stateModals)
+				// const MODALS_HELL = []
+				// const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+
+				// const REC = function (stateModals, currModal) {
+				// 	const CHILD_INDEX = currModal.$children.reduce((acc, modal) => {
+				// 		if ('name' in modal && modal.name) {
+				// 			const CHILD_INDEX = stateModals.findIndex(item => item.name === modal.name)
+				// 			acc = stateModals[CHILD_INDEX].isShow ? CHILD_INDEX : -1
+				// 		}
+
+				// 		return acc
+				// 	}, -1)
+
+				// 	// console.log('CHILD_INDEX', CHILD_INDEX)
+				// 	MODALS_HELL.unshift(currModal)
+
+				// 	return CHILD_INDEX !== -1
+				// 		? REC(stateModals, stateModals[CHILD_INDEX])
+				// 		: MODALS_HELL
+				// }
+
+				// console.log('REC: ', REC(this.stateModals, this.stateModals[CURR_INDEX]))
+
+				// new Promise((resolve) => {
+				// 	console.log('MODALS_HELL: ', MODALS_HELL)
+				// 	MODALS_HELL.forEach((curr, i) => {
+				// 		setTimeout(() => {
+				// 			const EX_INDEX = this.stateModals.findIndex(modal => modal.name === curr.name)
+				// 			curr.isActive = false
+				// 			curr.isShow = false
+				// 			this.stateModals.unshift(...this.stateModals.splice(EX_INDEX, 1))
+				// 		}, i * 100)
+				// 	})
+
+				// 	if (MODALS_HELL.length === 1) {
+				// 		console.log('1')
+				// 		resolve()
+				// 	} else if (MODALS_HELL.length === 2) {
+				// 		console.log('2')
+				// 	} else {
+				// 		console.log('> 2')
+				// 	}
+
+				// }).then(() => {
+				// 	console.log('currModal: ', this.stateModals[CURR_INDEX])
+				// 	this.stateModals[CURR_INDEX].isActive = false
+				// 	this.stateModals[CURR_INDEX].isShow = false
+				// 	// this.lstateModals.unshift(...this.stateModals.splice(CURR_INDEX, 1))
+
+				// 	const CURR_ACTIVE_INDEX = this.stateModals
+				// 		.map(curr => curr.isShow)
+				// 		.lastIndexOf(true)
+
+				// 	if (CURR_ACTIVE_INDEX !== -1) {
+				// 		this.stateModals[CURR_ACTIVE_INDEX].isActive = true
+				// 		const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
+				// 			NEXT_ELEMENT = REF[Object.keys(REF)]
+
+				// 		NEXT_ELEMENT.focus()
+				// 	}
+				// })
+
+
+				
+				
+				
+				
+				
 				// nested
 				// const CHILD_INDEX = this.stateModals[CURR_INDEX].$children.reduce((acc, modal) => {
 				// 	if ('name' in modal) {
