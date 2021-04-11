@@ -2,31 +2,35 @@
 	<div class="modal-layer"
 		v-if="isShow"
 		:ref="name"
-		:tabindex="id"
+		tabindex="0"
 		:class="setClassActiveLayerModal"
 		:style="setStylePositionLevelLayerModal"
 		@keyup.esc="$cModal.close(name)">
 
-		<div class="modal-content modal-layer__modal-content"
-			:style="[setStylePositionContentModal, setStylePositionLevelModal]"
-			:class="setClassActiveContentModal"
+		<div class="modal-container modal-layer__modal-container"
+			:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
+			:class="setClassActiveContainerModal"
 			@mousedown="activate($event.target)"
 		>
-			<div class="modal-header modal-content__modal-header"
-				@mousedown="grab"
-				@mouseup="leave"
+			<div class="modal-content modal-layer__modal-content"
+				:class="setClassActiveContentModal"
 			>
-				{{ headerName }}
-
-				<span class="modal-header__icon-close"
-					@click="isActive ? $cModal.close(name) : $cModal.active(name)"
-					@mousedown.stop=""
+				<div class="modal-header modal-content__modal-header"
+					@mousedown="grab"
+					@mouseup="leave"
 				>
-					<c-close />
-				</span>
-			</div>
-			<div class="modal-body modal-content__modal-body">
-				<slot />
+					{{ headerName }}
+
+					<span class="modal-header__icon-close"
+						@click="isActive ? $cModal.close(name) : $cModal.active(name)"
+						@mousedown.stop=""
+					>
+						<c-close />
+					</span>
+				</div>
+				<div class="modal-body modal-content__modal-body">
+					<slot />
+				</div>
 			</div>
 		</div>
 
@@ -59,9 +63,10 @@
 			}
 		},
 		data: () => ({
+			type: 'Modal',
 			isShow: false,
 			isActive: false,
-			id: 0,
+			index: 0,
 			zIndex: 999,
 
 			isGrab: false,
@@ -72,14 +77,17 @@
 			offsetLeft: 0,
 		}),
 		computed: {
-			setStylePositionContentModal() {
+			setStylePositionContainerModal() {
 				return { top: `${this.fTop}${this.units}`, left: `${this.fLeft}${this.units}` }
 			},
 			setStylePositionLevelModal() {
-				return { zIndex: `${this.zIndex + this.id}` }
+				return { zIndex: `${this.zIndex + this.index}` }
 			},
 			setStylePositionLevelLayerModal() {
-				return { zIndex: `${this.zIndex + (this.id - 1)}` }
+				return { zIndex: `${this.zIndex + (this.index - 1)}` }
+			},
+			setClassActiveContainerModal() {
+				return { 'modal-container--active': this.isActive }
 			},
 			setClassActiveContentModal() {
 				return { 'modal-content--active': this.isActive }
@@ -90,10 +98,8 @@
 		},
 		methods: {
 			activate(target) {
-				if (target.classList.contains('modal-header')
-						|| target.classList.contains('modal-body')) {
-					this.$cModal.active(this.name)
-				}
+				if(target.tagName === 'BUTTON') return
+				this.$cModal.active(this.name)
 			},
 			grab(event) {
 				this.isGrab = true;
@@ -126,7 +132,7 @@
 <style lang="scss">
 	.modal-layer {
 		
-		&__modal-content {
+		&__modal-container {
 			position: absolute;
 			user-select: none;
 		}
@@ -137,26 +143,36 @@
 			position: absolute;
 			top: 0;
 			left: 0;
-			background: rgba(0,0,0, .3);
+			background: rgba(228, 228, 228, .9);
 		}
 	}
 
-	.modal-content {
+	.modal-container {
 		width: 300px;
 		height: 200px;
 		border-radius: 4px;
-		background: rgb(241, 241, 241);
-		box-shadow: 0 7px 25px -3.5px rgb(131, 131, 131);
-		filter: blur(.5px);
+		background: rgba(133, 133, 133, .1);
+		background: rgb(228, 228, 228);
+		box-shadow: 0 7px 25px -3.5px #5b5b5b;
+		filter: blur(1px);
 		display: flex;
 		flex-direction: column;
 		transform: translate(-50%, -50%);
 		transition: box-shadow .2s;
+		
 
 		&--active {
 			background: rgb(253, 250, 250);
 			box-shadow: 0 15px 50px -7px #000;
 			filter: blur(0);
+		}
+	}
+
+	.modal-content {
+		opacity: .3;
+		
+		&--active {
+			opacity: 1;
 		}
 
 		// &__modal-header {}

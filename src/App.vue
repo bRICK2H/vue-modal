@@ -25,7 +25,7 @@
     <c-modal
       name="header3"
       headerName="header3"
-      :isLayer="false"
+      :isLayer="true"
       :top="70"
       :left="70"
     >
@@ -43,7 +43,17 @@
             headerName="header5"
             :top="50"
             :left="20"
-          />
+          >
+				<c-modal
+					name="header6"
+					headerName="header6"
+					:top="30"
+					:left="20"
+				/>
+				<div class="block-btn">
+					<button class="btn" @click="open('header6')">Open6</button>
+				</div>
+			 </c-modal>
           <div class="block-btn">
             <button class="btn" @click="open('header5')">Open5</button>
           </div>

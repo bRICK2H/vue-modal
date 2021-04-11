@@ -8,9 +8,10 @@ export default {
 
 
 		class Modal {
-			constructor() {
+			constructor(modalContainer) {
 				this.vm = new Vue
 				this.stateModals = []
+				this.modalContainer = modalContainer
 			}
 
 			created(instance, name) {
@@ -36,167 +37,97 @@ export default {
 			active(name) {
 				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
 
-				this.stateModals = this.stateModals.map(curr => {
+				this.stateModals = this.stateModals.map((curr, index) => {
 					curr.isActive = curr.name === name
+					curr.index = index
 					return curr
 				})
 				this.stateModals.push(...this.stateModals.splice(CURR_INDEX, 1))
 			}
 
 			close(name) {
-
-				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
 				const MODALS_HELL = []
-				
-				const gen = function* (stateModals, currModal) {
+				const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
+				const MODAL_GENERATOR = function* (currModal) {
 					if (currModal) {
-						const CHILD_INDEX = currModal.$children.reduce((acc, modal) => {
-							if ('name' in modal) {
-								const CHILD_INDEX = stateModals.findIndex(item => item.name === modal.name)
-								acc = currModal.isShow ? CHILD_INDEX : -1
+						const MODAL_RESULT = currModal.$children.reduce((acc, modal) => {
+							if ('type' in modal && modal.type === 'Modal') {
+								const { isShow } = modal
+
+								acc = {
+									nextModal: isShow ? modal : null,
+									isChild: true,
+									isChildOpen: isShow,
+									aboutModal: isShow
+										? 'has an open child'
+										: 'has a closed child',
+									childModal: isShow ? modal : null,
+									currModal,
+									parentModal: currModal.$parent.type === 'Modal'
+										? currModal.$parent
+										: null
+								}
+							} else {
+								acc = {
+									nextModal: null,
+									isChild: false,
+									aboutModal: 'don\'t have a child',
+									childModal: null,
+									currModal,
+									parentModal: currModal.$parent.type === 'Modal'
+										? currModal.$parent
+										: null
+								}
 							}
-	
+
 							return acc
-						}, -1)
+						}, { nextModal: null } )
 
-						yield CHILD_INDEX
-						
-						// if (CHILD_INDEX !== -1 && stateModals[CHILD_INDEX].isShow) {
-						// 	console.log('good')
-						// 	console.log(stateModals[CHILD_INDEX])
-						// 	return
-						// } else if (CHILD_INDEX === -1) {
-						// 	console.log('else ch')
-						// }
+						if (!MODAL_RESULT.nextModal) {
+							yield MODAL_RESULT; return
+						}
 
-						MODALS_HELL.unshift(currModal)
-						yield* gen(stateModals, stateModals[CHILD_INDEX])
-					} else {
-						console.log('else', MODALS_HELL)
-						MODALS_HELL.forEach((curr, i) => {
-							setTimeout(() => {
-								curr.isShow = false;
-							}, i * 100)
-						})
+						yield MODAL_RESULT
+						yield* MODAL_GENERATOR(MODAL_RESULT.nextModal)
 					}
-				
 				}
 
-				const iterator = gen(this.stateModals, this.stateModals[CURR_INDEX])
+				const MODAL_ITERATOR = MODAL_GENERATOR(CURR_MODAL)
 
-				for(const item of iterator) {
-					console.log('item: ', item, iterator)
+				for (const result of MODAL_ITERATOR) {
+					const { currModal } = result
+					MODALS_HELL.unshift(currModal)
 				}
 				
-				
-				// console.log('before: ', this.stateModals)
-				// const MODALS_HELL = []
-				// const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+				MODALS_HELL.forEach((curr, i) => {
+					if (this.stateModals.map(modal => modal.name === curr.name)) {
+						const INDEX_MODAL_IN_STATE = this.stateModals.findIndex(modal => modal.name === curr.name)
+						
+						setTimeout(() => {
+							curr.isShow = false
+							curr.isActive = false
+							this.stateModals.unshift(...this.stateModals.splice(INDEX_MODAL_IN_STATE, 1))
 
-				// const REC = function (stateModals, currModal) {
-				// 	const CHILD_INDEX = currModal.$children.reduce((acc, modal) => {
-				// 		if ('name' in modal && modal.name) {
-				// 			const CHILD_INDEX = stateModals.findIndex(item => item.name === modal.name)
-				// 			acc = stateModals[CHILD_INDEX].isShow ? CHILD_INDEX : -1
-				// 		}
+							const CURR_ACTIVE_INDEX = this.stateModals
+								.map(curr => curr.isShow)
+								.lastIndexOf(true)
 
-				// 		return acc
-				// 	}, -1)
+							if (CURR_ACTIVE_INDEX !== -1) {
+								this.stateModals[CURR_ACTIVE_INDEX].isActive = true
+								const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
+										NEXT_ELEMENT = REF[Object.keys(REF)]
 
-				// 	// console.log('CHILD_INDEX', CHILD_INDEX)
-				// 	MODALS_HELL.unshift(currModal)
+								NEXT_ELEMENT.focus()
+							}
 
-				// 	return CHILD_INDEX !== -1
-				// 		? REC(stateModals, stateModals[CHILD_INDEX])
-				// 		: MODALS_HELL
-				// }
+						}, i * 100)
 
-				// console.log('REC: ', REC(this.stateModals, this.stateModals[CURR_INDEX]))
-
-				// new Promise((resolve) => {
-				// 	console.log('MODALS_HELL: ', MODALS_HELL)
-				// 	MODALS_HELL.forEach((curr, i) => {
-				// 		setTimeout(() => {
-				// 			const EX_INDEX = this.stateModals.findIndex(modal => modal.name === curr.name)
-				// 			curr.isActive = false
-				// 			curr.isShow = false
-				// 			this.stateModals.unshift(...this.stateModals.splice(EX_INDEX, 1))
-				// 		}, i * 100)
-				// 	})
-
-				// 	if (MODALS_HELL.length === 1) {
-				// 		console.log('1')
-				// 		resolve()
-				// 	} else if (MODALS_HELL.length === 2) {
-				// 		console.log('2')
-				// 	} else {
-				// 		console.log('> 2')
-				// 	}
-
-				// }).then(() => {
-				// 	console.log('currModal: ', this.stateModals[CURR_INDEX])
-				// 	this.stateModals[CURR_INDEX].isActive = false
-				// 	this.stateModals[CURR_INDEX].isShow = false
-				// 	// this.lstateModals.unshift(...this.stateModals.splice(CURR_INDEX, 1))
-
-				// 	const CURR_ACTIVE_INDEX = this.stateModals
-				// 		.map(curr => curr.isShow)
-				// 		.lastIndexOf(true)
-
-				// 	if (CURR_ACTIVE_INDEX !== -1) {
-				// 		this.stateModals[CURR_ACTIVE_INDEX].isActive = true
-				// 		const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-				// 			NEXT_ELEMENT = REF[Object.keys(REF)]
-
-				// 		NEXT_ELEMENT.focus()
-				// 	}
-				// })
-
-
-				
-				
-				
-				
-				
-				// nested
-				// const CHILD_INDEX = this.stateModals[CURR_INDEX].$children.reduce((acc, modal) => {
-				// 	if ('name' in modal) {
-				// 		const CHILD_INDEX = this.stateModals.findIndex(item => item.name === modal.name)
-				// 		acc = this.stateModals[CHILD_INDEX].isShow ? CHILD_INDEX : -1
-				// 	}
-
-				// 	return acc
-				// }, -1)
-
-
-				// new Promise((resolve) => {
-				// 	if (CHILD_INDEX !== -1) {
-				// 		this.stateModals[CHILD_INDEX].isShow = false
-				// 	} 
-
-				// 	resolve()
-				// }).then(() => {
-				// 	this.stateModals[CURR_INDEX].isActive = false
-				// 	this.stateModals[CURR_INDEX].isShow = false
-				// 	this.stateModals.unshift(...this.stateModals.splice(CURR_INDEX, 1))
-					
-				// 	const CURR_ACTIVE_INDEX = this.stateModals
-				// 		.map(curr => curr.isShow)
-				// 		.lastIndexOf(true)
-
-				// 	if (CURR_ACTIVE_INDEX !== -1) {
-				// 		this.stateModals[CURR_ACTIVE_INDEX].isActive = true
-				// 		const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-				// 			NEXT_ELEMENT = REF[Object.keys(REF)]
-
-				// 		NEXT_ELEMENT.focus()
-				// 	}
-				// })
-
+					}
+				})
 			}
 		}
 
-		Vue.prototype.$cModal = new Modal
+		Vue.prototype.$cModal = new Modal(MODAL_CONTAINER)
 		Vue.component('c-modal', CModalLayer)
 	}
 }
