@@ -3,8 +3,6 @@ import CModalLayer from './c-modal-layer.vue'
 export default {
 	install(Vue) {
 		const MODAL_CONTAINER = document.createElement('c-modal-container')
-		MODAL_CONTAINER.id = 'modal-container'
-		MODAL_CONTAINER.classList.add('abs')
 		document.body.appendChild(MODAL_CONTAINER)
 
 

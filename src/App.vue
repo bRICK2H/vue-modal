@@ -26,6 +26,7 @@
       name="header3"
       headerName="header3"
       :isLayer="true"
+		:isCloseOnLayer="false"
       :top="70"
       :left="70"
     >
