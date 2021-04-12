@@ -4,6 +4,7 @@ export default {
 	install(Vue) {
 		const MODAL_CONTAINER = document.createElement('c-modal-container')
 		MODAL_CONTAINER.id = 'modal-container'
+		MODAL_CONTAINER.classList.add('abs')
 		document.body.appendChild(MODAL_CONTAINER)
 
 
@@ -16,6 +17,7 @@ export default {
 
 			created(instance, name) {
 				const EXIST_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+
 				if (EXIST_INDEX === -1) {
 					this.stateModals.push(instance)
 				} else {
@@ -37,12 +39,12 @@ export default {
 			active(name) {
 				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
 
+				this.stateModals.push(...this.stateModals.splice(CURR_INDEX, 1))
 				this.stateModals = this.stateModals.map((curr, index) => {
 					curr.isActive = curr.name === name
 					curr.index = index
 					return curr
 				})
-				this.stateModals.push(...this.stateModals.splice(CURR_INDEX, 1))
 			}
 
 			close(name) {
@@ -104,26 +106,43 @@ export default {
 						const INDEX_MODAL_IN_STATE = this.stateModals.findIndex(modal => modal.name === curr.name)
 						
 						setTimeout(() => {
-							curr.isShow = false
-							curr.isActive = false
-							this.stateModals.unshift(...this.stateModals.splice(INDEX_MODAL_IN_STATE, 1))
+							new Promise((resolve => {
+								curr.isShow = false
+								curr.isActive = false
+								this.stateModals.unshift(...this.stateModals.splice(INDEX_MODAL_IN_STATE, 1))
+	
+								const CURR_ACTIVE_INDEX = this.stateModals
+									.map(curr => curr.isShow)
+									.lastIndexOf(true)
+	
+								if (CURR_ACTIVE_INDEX !== -1) {
+									this.stateModals[CURR_ACTIVE_INDEX].isActive = true
+									const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
+											NEXT_ELEMENT = REF[Object.keys(REF)]
+	
+									NEXT_ELEMENT.focus()
+								}
 
-							const CURR_ACTIVE_INDEX = this.stateModals
-								.map(curr => curr.isShow)
-								.lastIndexOf(true)
-
-							if (CURR_ACTIVE_INDEX !== -1) {
-								this.stateModals[CURR_ACTIVE_INDEX].isActive = true
-								const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-										NEXT_ELEMENT = REF[Object.keys(REF)]
-
-								NEXT_ELEMENT.focus()
-							}
+								resolve()
+								
+							})).then(() => {
+								this.clearComments()
+							})
 
 						}, i * 100)
 
 					}
 				})
+			}
+
+			clearComments() {
+				if (this.modalContainer.firstChild) {
+					this.modalContainer.childNodes.forEach(curr => {
+						if (curr.nodeName === '#comment') {
+							this.modalContainer.removeChild(curr)
+						}
+					})
+				}
 			}
 		}
 

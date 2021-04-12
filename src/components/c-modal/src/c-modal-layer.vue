@@ -2,7 +2,8 @@
 	<div class="modal-layer"
 		v-if="isShow"
 		:ref="name"
-		tabindex="0"
+		:tabindex="index"
+		:key="name"
 		:class="setClassActiveLayerModal"
 		:style="setStylePositionLevelLayerModal"
 		@keyup.esc="$cModal.close(name)">
@@ -84,6 +85,7 @@
 				return { zIndex: `${this.zIndex + this.index}` }
 			},
 			setStylePositionLevelLayerModal() {
+				if (this.layer)
 				return { zIndex: `${this.zIndex + (this.index - 1)}` }
 			},
 			setClassActiveContainerModal() {
@@ -99,6 +101,7 @@
 		methods: {
 			activate(target) {
 				if(target.tagName === 'BUTTON') return
+				console.log(target)
 				this.$cModal.active(this.name)
 			},
 			grab(event) {
