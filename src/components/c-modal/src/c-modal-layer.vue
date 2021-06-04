@@ -3,12 +3,14 @@
 		<div class="modal-layer"
 			v-if="isShow"
 			:ref="name"
-			:tabindex="index"
+			:tabindex="0"
 			:class="setClassActiveLayerModal"
 			:style="setStylePositionLevelLayerModal"
-			@keyup.esc="(isLayer && isCloseOnLayer) || !isLayer ? $cModal.close(name) : false"
+			@keyup.esc="closeModal"
 			@mousedown="isCloseOnLayer ? $cModal.close(name) : false"
 		>
+			<!-- @keyup.esc="(isLayer && isCloseOnLayer) || !isLayer ? $cModal.close(name) : false" -->
+			<!-- @mousedown="isCloseOnLayer ? $cModal.close(name) : false" -->
 
 			<div class="modal-container modal-layer__modal-container"
 				:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
@@ -110,7 +112,6 @@
 				if(target.tagName === 'BUTTON') return
 				this.$cModal.active(this.name)
 			},
-
 			grab(event) {
 				this.isGrab = true;
 				this.units = 'px';
@@ -122,6 +123,11 @@
 			leave() {
 				this.isGrab = false;
 			},
+			closeModal() {
+				console.log(this.params)
+				this.$emit('before-close')
+				this.$cModal.close(this.name)
+			}
 		},
 		created() {
 			console.log('created')

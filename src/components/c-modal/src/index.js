@@ -1,4 +1,5 @@
 import CModalLayer from './c-modal-layer.vue'
+import iziDialog from './dialog.vue'
 
 export default {
 	install(Vue) {
@@ -6,6 +7,33 @@ export default {
 		document.body.appendChild(MODAL_CONTAINER)
 
 
+		const container_dialog = document.createElement('izi-dialog')
+		const ref_dialog = document.createElement('ref-dialog')
+
+		document.body.appendChild(container_dialog)
+		document.querySelector('izi-dialog').appendChild(ref_dialog)
+		const dialog = new Vue(iziDialog).$mount('ref-dialog')
+
+		Vue.prototype.$iDialog = (options = {}) => {
+			const REQUIRED_PROPERY = ['width', 'clickClose', 'title', 'text', 'type', 'buttons']
+
+			return new Promise(resolve => {
+				dialog.$set(dialog.$props, 'handler', result => resolve(result))
+				REQUIRED_PROPERY.forEach(property => {
+					if (options[property] !== undefined) {
+						dialog.$set(
+							dialog.$props,
+							property,
+							options[property]
+						)
+					}
+				})
+
+				dialog.open()
+			})
+		}
+
+		
 		class Modal {
 			constructor(modalContainer) {
 				this.vm = new Vue
@@ -46,6 +74,9 @@ export default {
 			}
 
 			close(name) {
+				console.log('close')
+					
+				return
 				const MODALS_HELL = []
 				const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
 				const MODAL_GENERATOR = function* (currModal) {

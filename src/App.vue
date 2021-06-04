@@ -15,7 +15,10 @@
       name="header1"
       headerName="header1"
       :top="30"
-    />
+      @before-close="beforeClose"
+    >
+      <button @click="openDialog">open dialog</button>
+    </c-modal>
     <c-modal
       name="header2"
       headerName="header2"
@@ -25,10 +28,9 @@
     <c-modal
       name="header3"
       headerName="header3"
-      :isLayer="true"
-		:isCloseOnLayer="false"
       :top="70"
       :left="70"
+      :isLayer="true"
     >
 
       <div>
@@ -77,8 +79,31 @@ export default {
     name: 'root'
   }),
   methods: {
+    async beforeClose() {
+      console.log('beforeClose')
+      return await 123
+    },
     open(name) {
       this.$cModal.open(name)
+    },
+    async openDialog() {
+      //    const res = await this.$iDialog()
+      //    const res = await this.$iDialog({})
+      const res = await this.$iDialog({
+          width: 500,
+          clickClose: false,
+          type: 'warning',
+          title: 'Are you ready?',
+          text: 'Description this content',
+          buttons: [
+              { title: 'YES', result: 'yes', color: true },
+              { title: 'NO', result: 'no' },
+              { title: 'MAYBE', result: 'mb' },
+              { title: 'ASDFASDFASDFSADFASF', result: 'ofc' },
+          ] 
+      })
+
+      console.log('res: ', res)
     }
   }
 }
