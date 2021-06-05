@@ -74,9 +74,6 @@ export default {
 			}
 
 			close(name) {
-				console.log('close')
-					
-				return
 				const MODALS_HELL = []
 				const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
 				const MODAL_GENERATOR = function* (currModal) {

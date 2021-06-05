@@ -3,7 +3,7 @@
 		<div class="izi-dialog-wrapper" v-if="isOpen"
 			ref="izi-dialog-wrapper"
 			tabindex="0"
-			@keydown.esc="close($event, false)"
+			@keyup.esc="close($event, false)"
 			@click="clickClose ? close($event, false) : false"
 		>
 			<div class="izi-dialog-container izi-dialog-wrapper__izi-dialog-container"
@@ -81,11 +81,12 @@ export default {
 		},
 	},
 	methods: {
-		open(options) {
+		open() {
 			if (this.isOpen) return
 			this.isOpen = true
 		},
 		close(e, result = false) {
+			console.log('dialog close')
 			this.handler(result)
 			this.isOpen = false
 		},
@@ -94,9 +95,10 @@ export default {
 		}
 	},
 	watch: {
-		isOpen(val) {
+		isOpen() {
 			this.$nextTick(() => {
 				const wrapper = this.$refs['izi-dialog-wrapper']
+				console.log('here', wrapper)
 
 				if (wrapper) {
 					this.$refs['izi-dialog-wrapper'].focus()
@@ -108,12 +110,17 @@ export default {
 </script>
 
 <style lang="scss">
+	.izi-dialog-wrapper * {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
 	.izi-dialog-wrapper {
-		width: 100vw;
-		height: 100vh;
+		width: 100%;
+		height: 100%;
 		display: flex;
 		background: rgba(0,0,0, .3);
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
 		z-index: 999999;

@@ -15,7 +15,7 @@
       name="header1"
       headerName="header1"
       :top="30"
-      @before-close="beforeClose"
+      :bClose="beforeClose"
     >
       <button @click="openDialog">open dialog</button>
     </c-modal>
@@ -81,7 +81,19 @@ export default {
   methods: {
     async beforeClose() {
       console.log('beforeClose')
-      return await 123
+      return await this.$iDialog({
+          width: 500,
+          clickClose: false,
+          type: 'warning',
+          title: 'Are you ready?',
+          text: 'Description this content',
+          buttons: [
+              { title: 'YES', result: 'yes', color: true },
+              { title: 'NO', result: 'no' },
+              { title: 'MAYBE', result: 'mb' },
+              { title: 'ASDFASDFASDFSADFASF', result: 'ofc' },
+          ] 
+      })
     },
     open(name) {
       this.$cModal.open(name)

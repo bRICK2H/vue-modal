@@ -3,10 +3,10 @@
 		<div class="modal-layer"
 			v-if="isShow"
 			:ref="name"
-			:tabindex="0"
 			:class="setClassActiveLayerModal"
 			:style="setStylePositionLevelLayerModal"
-			@keyup.esc="closeModal"
+			tabindex="0"
+			@keyup.esc="closeModal($event)"
 			@mousedown="isCloseOnLayer ? $cModal.close(name) : false"
 		>
 			<!-- @keyup.esc="(isLayer && isCloseOnLayer) || !isLayer ? $cModal.close(name) : false" -->
@@ -70,6 +70,10 @@
 			left: {
 				type: Number,
 				default: 50
+			},
+			bClose: {
+				type: Function,
+				default: () => null
 			}
 		},
 		data: () => ({
@@ -123,10 +127,17 @@
 			leave() {
 				this.isGrab = false;
 			},
-			closeModal() {
-				console.log(this.params)
-				this.$emit('before-close')
-				this.$cModal.close(this.name)
+			async closeModal(e) {
+				const { target } = e
+				const isDialog = await this.bClose()
+				console.log(isDialog)
+
+				if (isDialog || isDialog === null) {
+					this.$cModal.close(this.name)
+				}
+
+				console.log(target)
+				target.focus()
 			}
 		},
 		created() {
