@@ -3,8 +3,8 @@
 		<div class="izi-dialog-wrapper" v-if="isOpen"
 			ref="izi-dialog-wrapper"
 			tabindex="0"
-			@keyup.esc="close($event, false)"
-			@click="clickClose ? close($event, false) : false"
+			@keyup.esc="close(false, $event)"
+			@click="isCloseOnLayer ? close(false, $event) : false"
 		>
 			<div class="izi-dialog-container izi-dialog-wrapper__izi-dialog-container"
 				:style="dialogWidth"
@@ -35,7 +35,7 @@
 						:key="i"
 						class="izi-dialog-btn izi-dialog-buttons__izi-dialog-btn"
 						:class="color ? 'izi-dialog-btn--black' : ''"
-						@click="confirm($event, result)"
+						@click="confirm(result, $event)"
 					>
 						{{ title }}
 					</button>
@@ -54,7 +54,7 @@ const ICONS = {
 export default {
 	name: 'dialog',
 	props: {
-		clickClose: { default: true },
+		isCloseOnLayer: { default: false },
 		width: { default: 572 },
 		title: { default: 'Вы уверены?' },
 		text: { default: '' },
@@ -67,7 +67,7 @@ export default {
 				]
 			}
 		},
-		handler: Function
+		handler: { default: () => false }
 	},
 	data: () => ({
 		isOpen: false
@@ -85,20 +85,19 @@ export default {
 			if (this.isOpen) return
 			this.isOpen = true
 		},
-		close(e, result = false) {
-			console.log('dialog close')
+		close(result) {
+			console.log('dialog close', result)
 			this.handler(result)
 			this.isOpen = false
 		},
-		confirm(e, result) {
-			this.close(null, result)
+		confirm(result) {
+			this.close(result)
 		}
 	},
 	watch: {
 		isOpen() {
 			this.$nextTick(() => {
 				const wrapper = this.$refs['izi-dialog-wrapper']
-				console.log('here', wrapper)
 
 				if (wrapper) {
 					this.$refs['izi-dialog-wrapper'].focus()

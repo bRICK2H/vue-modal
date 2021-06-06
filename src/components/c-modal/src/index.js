@@ -3,14 +3,14 @@ import iziDialog from './dialog.vue'
 
 export default {
 	install(Vue) {
-		const MODAL_CONTAINER = document.createElement('c-modal-container')
+		const MODAL_CONTAINER = document.createElement('izi-modal-container')
 		document.body.appendChild(MODAL_CONTAINER)
 
 
 		const container_dialog = document.createElement('izi-dialog')
 		const ref_dialog = document.createElement('ref-dialog')
 
-		document.body.appendChild(container_dialog)
+		MODAL_CONTAINER.appendChild(container_dialog)
 		document.querySelector('izi-dialog').appendChild(ref_dialog)
 		const dialog = new Vue(iziDialog).$mount('ref-dialog')
 

@@ -1,21 +1,20 @@
 <template>
-	<transition name="modal">
+	<transition name="layer">
 		<div class="modal-layer"
 			v-if="isShow"
 			:ref="name"
 			:class="setClassActiveLayerModal"
 			:style="setStylePositionLevelLayerModal"
 			tabindex="0"
-			@keyup.esc="closeModal($event)"
-			@mousedown="isCloseOnLayer ? $cModal.close(name) : false"
+			@keyup.esc="close(false, $event)"
+			@click="close(true, $event)"
 		>
-			<!-- @keyup.esc="(isLayer && isCloseOnLayer) || !isLayer ? $cModal.close(name) : false" -->
-			<!-- @mousedown="isCloseOnLayer ? $cModal.close(name) : false" -->
 
 			<div class="modal-container modal-layer__modal-container"
 				:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
 				:class="setClassActiveContainerModal"
 				@mousedown="activate($event.target)"
+				@click.stop=""
 			>
 				<div class="modal-content modal-layer__modal-content"
 					:class="setClassActiveContentModal"
@@ -27,7 +26,7 @@
 						{{ headerName }}
 
 						<span class="modal-header__icon-close"
-							@click="isActive ? $cModal.close(name) : $cModal.active(name)"
+							@click="close(false, $event)"
 							@mousedown.stop=""
 						>
 							<c-close />
@@ -73,7 +72,7 @@
 			},
 			bClose: {
 				type: Function,
-				default: () => null
+				default: () => true
 			}
 		},
 		data: () => ({
@@ -92,7 +91,10 @@
 		}),
 		computed: {
 			setStylePositionContainerModal() {
-				return { top: `${this.fTop}${this.units}`, left: `${this.fLeft}${this.units}` }
+				return {
+					top: `${this.fTop}${this.units}`,
+					left: `${this.fLeft}${this.units}`
+				}
 			},
 			setStylePositionLevelModal() {
 				return { zIndex: `${this.zIndex + this.index}` }
@@ -127,21 +129,21 @@
 			leave() {
 				this.isGrab = false;
 			},
-			async closeModal(e) {
-				const { target } = e
-				const isDialog = await this.bClose()
-				console.log(isDialog)
+			async close(isFocusLayer, e) {
+				const { target, code } = e
+				const isDialog = this.isActive && (this.isCloseOnLayer || !isFocusLayer)
+					? await this.bClose()
+					: false
 
-				if (isDialog || isDialog === null) {
+				if (!this.isActive) this.$cModal.active(this.name)
+				if (isDialog || typeof isDialog === 'string') {
 					this.$cModal.close(this.name)
+				} else {
+					if (code === 'Escape') target.focus()
 				}
-
-				console.log(target)
-				target.focus()
-			}
+			},
 		},
 		created() {
-			console.log('created')
 			this.$cModal.created(this, this.name)
 			this.fTop = this.top
 			this.fLeft = this.left
@@ -179,13 +181,12 @@
 		height: 200px;
 		border-radius: 4px;
 		box-shadow: 0 7px 25px -3.5px #5b5b5b;
-		background: rgba(0,0,0, .1);
+		background-color: #dfdfdf;
 		filter: blur(1px);
 		display: flex;
 		flex-direction: column;
 		transform: translate(-50%, -50%) perspective(500px) rotateX(0deg);
 		transition: box-shadow .2s;
-		
 
 		&--active {
 			background: rgb(250, 250, 250);
@@ -247,21 +248,28 @@
 		border-bottom-right-radius: 4px;
 	}
 
-	.modal-enter-active,
-	.modal-leave-active {
-		animation: layer .2s
+	.layer-enter-active {
+		animation: .4s enter-layer;
+		@keyframes enter-layer {
+			0% { opacity: 0; }
+		}
 	}
-	.modal-enter-active .modal-container {
-		animation: modal-enter .2s;
+	.layer-enter-active .modal-container {
+		animation: .4s enter-container-modal;
+		@keyframes enter-container-modal {
+			0% { transform: translate(0%, 0%) perspective(500px) rotateX(90deg); }
+		}
 	}
-	@keyframes modal-enter {
-		0% { transform: translate(-50%, -50%) perspective(500px) rotateX(90deg); }
-		100% { transform: translate(-50%, -50%) perspective(500px) rotateX(0deg); }
+	.layer-leave-active {
+		animation: .4s leave-layer;
+		@keyframes leave-layer {
+			100% { opacity: 0; }
+		}
 	}
-	.modal-leave-active .modal-container {
-		animation: modal-leave .3s;
-	}
-	@keyframes modal-leave {
-		100% { transform: translate(-50%, 100vh); }
+	.layer-leave-active .modal-container {
+		animation: .4s leave-container-modal;
+		@keyframes leave-container-modal {
+			100% { transform: translate(-50%, -50vh); }
+		}
 	}
 </style>

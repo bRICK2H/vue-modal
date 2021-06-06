@@ -18,6 +18,10 @@ Vue.config.productionTip = false
 
 Vue.use(cModal)
 
+// pack
+import VModal from 'vue-js-modal'
+Vue.use(VModal)
+
 new Vue({
   render: h => h(App),
 }).$mount('#app')

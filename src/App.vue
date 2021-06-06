@@ -14,7 +14,6 @@
     <c-modal
       name="header1"
       headerName="header1"
-      :top="30"
       :bClose="beforeClose"
     >
       <button @click="openDialog">open dialog</button>
@@ -31,6 +30,8 @@
       :top="70"
       :left="70"
       :isLayer="true"
+      :isCloseOnLayer="false"
+      :bClose="beforeClose"
     >
 
       <div>
@@ -67,6 +68,24 @@
       </div>
 
     </c-modal>
+
+    <!-- <modal name="my-first-modal"
+      :draggable="true"
+      :clickToClose="false"
+    >
+      This is my first modal
+    
+      <modal name="my-s-modal"
+        :draggable="true"
+        :clickToClose="false"
+      >
+          This is my s modal
+      </modal>
+      <button @click="$modal.show('my-s-modal')">modal-s</button>
+    </modal>
+    <button
+    @click="$modal.show('my-first-modal')">modal-f</button> -->
+    
   </div>
 </template>
 
@@ -88,8 +107,8 @@ export default {
           title: 'Are you ready?',
           text: 'Description this content',
           buttons: [
-              { title: 'YES', result: 'yes', color: true },
-              { title: 'NO', result: 'no' },
+              { title: 'YES', result: true, color: true },
+              { title: 'NO', result: false },
               { title: 'MAYBE', result: 'mb' },
               { title: 'ASDFASDFASDFSADFASF', result: 'ofc' },
           ] 
@@ -103,7 +122,7 @@ export default {
       //    const res = await this.$iDialog({})
       const res = await this.$iDialog({
           width: 500,
-          clickClose: false,
+          // isCloseOnLayer: false,
           type: 'warning',
           title: 'Are you ready?',
           text: 'Description this content',
