@@ -1,39 +1,39 @@
-import CModalLayer from './c-modal-layer.vue'
-import iziDialog from './dialog.vue'
+import IModal from './i-modal.vue'
+import IDialog from './i-dialog.vue'
 
 export default {
 	install(Vue) {
 		const MODAL_CONTAINER = document.createElement('izi-modal-container')
-		document.body.appendChild(MODAL_CONTAINER)
-
-
-		const container_dialog = document.createElement('izi-dialog')
+		const DIALOG_CONTAINER = document.createElement('izi-dialog')
 		const ref_dialog = document.createElement('ref-dialog')
 
-		MODAL_CONTAINER.appendChild(container_dialog)
-		document.querySelector('izi-dialog').appendChild(ref_dialog)
-		const dialog = new Vue(iziDialog).$mount('ref-dialog')
+		document.body.appendChild(MODAL_CONTAINER)
+		MODAL_CONTAINER.appendChild(DIALOG_CONTAINER)
+		DIALOG_CONTAINER.appendChild(ref_dialog)
 
-		Vue.prototype.$iDialog = (options = {}) => {
-			const REQUIRED_PROPERY = ['width', 'clickClose', 'title', 'text', 'type', 'buttons']
+		class Dialog {
+			constructor() {
+				this.properties = ['width', 'clickClose', 'title', 'text', 'type', 'buttons']
+				this.dialog = new Vue(IDialog).$mount('ref-dialog')
+			}
+			open(options = {}) {
+				return new Promise(resolve => {
+					this.dialog.$set(this.dialog.$props, 'handler', result => resolve(result))
+					this.properties.forEach(property => {
+						if (options[property] !== undefined) {
+							this.dialog.$set(
+								this.dialog.$props,
+								property,
+								options[property]
+							)
+						}
+					})
 
-			return new Promise(resolve => {
-				dialog.$set(dialog.$props, 'handler', result => resolve(result))
-				REQUIRED_PROPERY.forEach(property => {
-					if (options[property] !== undefined) {
-						dialog.$set(
-							dialog.$props,
-							property,
-							options[property]
-						)
-					}
+					this.dialog.open()
 				})
-
-				dialog.open()
-			})
+			}
 		}
 
-		
 		class Modal {
 			constructor(modalContainer) {
 				this.vm = new Vue
@@ -50,15 +50,18 @@ export default {
 					this.stateModals.splice(EXIST_INDEX, 1, instance)
 				}
 			}
-			
+
 			async open(name) {
 				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+				const BEFORE_OPEN = await this.stateModals[CURR_INDEX].beforeOpen()
+
+				if (BEFORE_OPEN === false) return;
 				this.stateModals[CURR_INDEX]['isShow'] = true
-				
+
 				await this.vm.$nextTick()
 				MODAL_CONTAINER.appendChild(this.stateModals[CURR_INDEX].$refs[name])
 				this.stateModals[CURR_INDEX].$refs[name].focus()
-	
+
 				this.active(name)
 			}
 
@@ -109,7 +112,7 @@ export default {
 							}
 
 							return acc
-						}, { nextModal: null } )
+						}, { nextModal: null })
 
 						if (!MODAL_RESULT.nextModal) {
 							yield MODAL_RESULT; return
@@ -126,31 +129,31 @@ export default {
 					const { currModal } = result
 					MODALS_HELL.unshift(currModal)
 				}
-				
+
 				MODALS_HELL.forEach((curr, i) => {
 					if (this.stateModals.map(modal => modal.name === curr.name)) {
 						const INDEX_MODAL_IN_STATE = this.stateModals.findIndex(modal => modal.name === curr.name)
-						
+
 						setTimeout(() => {
 							new Promise((resolve => {
 								curr.isShow = false
 								curr.isActive = false
 								this.stateModals.unshift(...this.stateModals.splice(INDEX_MODAL_IN_STATE, 1))
-	
+
 								const CURR_ACTIVE_INDEX = this.stateModals
 									.map(curr => curr.isShow)
 									.lastIndexOf(true)
-	
+
 								if (CURR_ACTIVE_INDEX !== -1) {
 									this.stateModals[CURR_ACTIVE_INDEX].isActive = true
 									const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-											NEXT_ELEMENT = REF[Object.keys(REF)]
-	
+										NEXT_ELEMENT = REF[Object.keys(REF)]
+
 									NEXT_ELEMENT.focus()
 								}
 
 								resolve()
-								
+
 							})).then(() => {
 								this.clearComments()
 							})
@@ -172,7 +175,9 @@ export default {
 			}
 		}
 
-		Vue.prototype.$cModal = new Modal(MODAL_CONTAINER)
-		Vue.component('c-modal', CModalLayer)
+		Vue.prototype.$iziModal = new Modal(MODAL_CONTAINER)
+		Vue.prototype.$iziDialog = new Dialog
+
+		Vue.component('izi-modal', IModal)
 	}
 }

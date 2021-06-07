@@ -1,40 +1,40 @@
 <template>
-	<transition name="izi-dialog">
-		<div class="izi-dialog-wrapper" v-if="isOpen"
-			ref="izi-dialog-wrapper"
+	<transition name="i-dialog">
+		<div class="i-dialog-wrapper" v-if="isOpen"
+			ref="i-dialog-wrapper"
 			tabindex="0"
 			@keyup.esc="close(false, $event)"
-			@click="isCloseOnLayer ? close(false, $event) : false"
+			@click="layerClickToClose ? close(false, $event) : false"
 		>
-			<div class="izi-dialog-container izi-dialog-wrapper__izi-dialog-container"
+			<div class="i-dialog-container i-dialog-wrapper__i-dialog-container"
 				:style="dialogWidth"
 				@click.stop=""
 			>
-				<div class="izi-dialog-header">
+				<div class="i-dialog-header">
 					<!-- Icons -->
-					<div class="izi-dialog-icon izi-dialog-container__izi-dialog-icon">
+					<div class="i-dialog-icon i-dialog-container__i-dialog-icon">
 						<img :src="dialogIcon" alt="icon">
 					</div>
 
 					<!-- Content -->
-					<div class="izi-dialog-content izi-dialog-container__izi-dialog-content">
-						<p class="izi-dialog-title izi-dialog-content__izi-dialog-title">
+					<div class="i-dialog-content i-dialog-container__i-dialog-content">
+						<p class="i-dialog-title i-dialog-content__i-dialog-title">
 							{{ title }}
 						</p>
-						<p class="izi-dialog-text izi-dialog-content__izi-dialog-text">
+						<p class="i-dialog-text i-dialog-content__i-dialog-text">
 							{{ text }}
 						</p>
 					</div>
 				</div>
 
 				<!-- Buttons -->
-				<div class="izi-dialog-buttons"
-					ref="izi-dialog-buttons"
+				<div class="i-dialog-buttons"
+					ref="i-dialog-buttons"
 				>
 					<button v-for="({ title, result, color }, i) of buttons"
 						:key="i"
-						class="izi-dialog-btn izi-dialog-buttons__izi-dialog-btn"
-						:class="color ? 'izi-dialog-btn--black' : ''"
+						class="i-dialog-btn i-dialog-buttons__i-dialog-btn"
+						:class="color ? 'i-dialog-btn--black' : ''"
 						@click="confirm(result, $event)"
 					>
 						{{ title }}
@@ -47,14 +47,14 @@
 
 <script>
 const ICONS = {
-	info: require('../assets/img/info.png'),
-	warning: require('../assets/img/warning.png')
+	info: require('./assets/img/info.png'),
+	warning: require('./assets/img/warning.png')
 }
 
 export default {
-	name: 'dialog',
+	name: 'iziDialog',
 	props: {
-		isCloseOnLayer: { default: false },
+		layerClickToClose: { default: false },
 		width: { default: 572 },
 		title: { default: 'Вы уверены?' },
 		text: { default: '' },
@@ -86,7 +86,6 @@ export default {
 			this.isOpen = true
 		},
 		close(result) {
-			console.log('dialog close', result)
 			this.handler(result)
 			this.isOpen = false
 		},
@@ -97,10 +96,10 @@ export default {
 	watch: {
 		isOpen() {
 			this.$nextTick(() => {
-				const wrapper = this.$refs['izi-dialog-wrapper']
+				const wrapper = this.$refs['i-dialog-wrapper']
 
 				if (wrapper) {
-					this.$refs['izi-dialog-wrapper'].focus()
+					this.$refs['i-dialog-wrapper'].focus()
 				}
 			})
 		}
@@ -109,12 +108,9 @@ export default {
 </script>
 
 <style lang="scss">
-	.izi-dialog-wrapper * {
-		margin: 0;
-		padding: 0;
-		box-sizing: border-box;
-	}
-	.izi-dialog-wrapper {
+	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
+
+	.i-dialog-wrapper {
 		width: 100%;
 		height: 100%;
 		display: flex;
@@ -124,11 +120,18 @@ export default {
 		left: 0;
 		z-index: 999999;
 
-		&__izi-dialog-container {
+		& * {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Inter', sans-serif;
+		}
+
+		&__i-dialog-container {
 			margin: auto;
 		}
 	}
-	.izi-dialog-container {
+	.i-dialog-container {
 		box-sizing: border-box;
 		background: #fff;
 		border-radius: 12px;
@@ -137,42 +140,42 @@ export default {
 		display: flex;
 		flex-direction: column;
 
-		&__izi-dialog-icon {
+		&__i-dialog-icon {
 			margin-right: 24px;
 		}
 	}
-	.izi-dialog-header {
+	.i-dialog-header {
 		display: flex;
 	}
-	.izi-dialog-icon {
+	.i-dialog-icon {
 		width: auto;
 	}
-	.izi-dialog-content {
+	.i-dialog-content {
 		width: 100%;
 
-		&__izi-dialog-title {
+		&__i-dialog-title {
 			margin-bottom: 16px;
 		}
-		&__izi-dialog-text {
+		&__i-dialog-text {
 			margin-bottom: 32px;
 		}
 	}
-	.izi-dialog-title {
+	.i-dialog-title {
 		font-family: Inter;
 		font-weight: bold;
 		font-size: 20px;
 		line-height: 28px;
 	}
-	.izi-dialog-text {
+	.i-dialog-text {
 		font-size: 14px;
 		line-height: 20px;
 	}
-	.izi-dialog-buttons {
+	.i-dialog-buttons {
 		height: 48px;
 		display: flex;
 		justify-content: flex-end;
 	}
-	.izi-dialog-btn  {
+	.i-dialog-btn  {
 		height: 100%;
 		min-width: 156px;
 		padding: 13px 17.5px;
@@ -206,28 +209,28 @@ export default {
 			}
 		}
 	}
-	.izi-dialog-enter-active {
-		animation: .4s enter-wrapper-dialog;
+	.i-dialog-enter-active {
+		animation: .5s enter-wrapper-dialog;
 		@keyframes enter-wrapper-dialog {
 			0% { opacity: 0; }
 		}
 	}
-	.izi-dialog-enter-active .izi-dialog-container {
-		animation: .4s enter-container-dialog;
+	.i-dialog-enter-active .i-dialog-container {
+		animation: .5s enter-container-dialog;
 		@keyframes enter-container-dialog {
-			0% { transform: translateY(50vh); }
+			0% { transform: translateY(100vh); }
 		}
 	}
-	.izi-dialog-leave-active {
-		animation: .4s leave-wrapper-dialog;
+	.i-dialog-leave-active {
+		animation: .5s leave-wrapper-dialog;
 		@keyframes leave-wrapper-dialog {
 			100% { opacity: 0; }
 		}
 	}
-	.izi-dialog-leave-active .izi-dialog-container {
-		animation: .4s leave-container-dialog;
+	.i-dialog-leave-active .i-dialog-container {
+		animation: .5s leave-container-dialog;
 		@keyframes leave-container-dialog {
-			100% { transform: translateY(-50vh); }
+			100% { transform: translateY(-100vh) perspective(500px) rotateX(-90deg); }
 		}
 	}
 </style>
