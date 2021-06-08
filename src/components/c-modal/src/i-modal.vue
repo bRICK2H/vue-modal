@@ -1,13 +1,13 @@
 <template>
-	<transition name="i-modal-layer">
+	<transition :name="transition">
 		<div class="i-modal-layer"
 			v-if="isShow"
 			:ref="name"
 			:class="setClassActiveLayerModal"
 			:style="setStylePositionLevelLayerModal"
 			tabindex="0"
-			@keyup.esc="close(false, $event)"
-			@click="close(true, $event)"
+			@keyup.esc="close"
+			@click="layerClickToClose ? close() : false"
 		>
 
 			<div class="i-modal-container i-modal-layer__i-modal-container"
@@ -26,7 +26,7 @@
 						@mouseup="draggable ? leave() : false"
 					>
 
-						<slot name="header">
+						<slot name="header-content">
 							<span class="i-header-title i-modal-header__i-header-title">
 								{{ headerTitle }}
 							</span>		
@@ -34,20 +34,23 @@
 
 						<span v-if="buttonClose"
 							class="i-header-close i-modal-header__i-header-close"
-							@click="close(false, $event)"
+							@click="close"
 							@mousedown.stop=""
 						>
 							<c-close />
 						</span>
 					</div>
-					<div class="i-modal-body i-modal-content__i-modal-body">
+					<div class="i-modal-body i-modal-content__i-modal-body"
+						:class="{ 'i-modal-body--radius': header }"
+						:style="{ padding: `${padding}px` }"
+					>
 						<span v-if="buttonClose && !header"
 							class="i-body-close i-modal-body__i-body-close"
-							@click="close(false, $event)"
+							@click="close"
 						>
 							<c-close />
 						</span>
-						<slot name="body" />
+						<slot name="body-content" />
 					</div>
 				</div>
 			</div>
@@ -78,7 +81,7 @@
 			},
 			layerClickToClose: {
 				type: Boolean,
-				default: false
+				default: true
 			},
 			buttonClose: {
 				type: Boolean,
@@ -86,7 +89,7 @@
 			},
 			draggable: {
 				type: Boolean,
-				default: true
+				default: false
 			},
 			top: {
 				type: [Number, String],
@@ -112,6 +115,14 @@
 				type: [Number, String],
 				default: 200
 			},
+			padding: {
+				type: [Number, String],
+				default: 32
+			},
+			transition: {
+				type: String,
+				default: 'rotate'
+			},
 			beforeOpen: {
 				type: Function,
 				default: () => true
@@ -132,18 +143,17 @@
 			fTop: 0,
 			fLeft: 0,
 			offsetTop: 0,
-			offsetLeft: 0,
+			offsetLeft: 0
 		}),
 		computed: {
 			setStylePositionContainerModal() {
-				console.log(this.width)
 				return {
 					top: `${this.fTop}${this.units}`,
 					left: `${this.fLeft}${this.units}`,
-					width: this.width === 'auto' ? this.width : `${this.width}px`,
-					height: this.height === 'auto' ? this.height : `${this.height}px`,
+					width: this.width === 'auto' ? this.width : `${this.width % 2 ? this.width - 1 : this.width}px`,
+					height: this.height === 'auto' ? this.height : `${this.height % 2 ? this.height - 1 : this.height}px`,
 					minWidth: `${this.minWidth}px`,
-					maxHeight: `${this.maxHeight}px`,
+					minHeight: `${this.minHeight}px`,
 				}
 			},
 			setStylePositionLevelModal() {
@@ -179,17 +189,18 @@
 			leave() {
 				this.isGrab = false;
 			},
-			async close(isFocusLayer, e) {
-				const isDialog = this.isActive && (this.layerClickToClose || !isFocusLayer)
+			async close() {
+				const isDialog = this.isActive
 					? await this.beforeClose()
 					: false
 
-				console.log('close', e.target, this.name, isDialog)
 				if (!this.isActive) this.$iziModal.active(this.name)
-				if (isDialog || typeof isDialog === 'string') {
+				if (isDialog || isDialog === undefined || typeof isDialog === 'string') {
 					this.$iziModal.close(this.name)
 				} else {
-					this.$refs[this.name].focus()
+					if (this.$refs[this.name]) {
+						this.$refs[this.name].focus()
+					}
 				}
 			},
 		},
@@ -205,25 +216,22 @@
 				}
 			})
 		},
+		mounted() {
+			this.$nextTick(() => {
+				// определить auto, bclosed, bopened
+				console.log(this.$refs[this.name])
+			})
+		}
 	}
 </script>
 
 <style lang="scss">
-	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
-	
 	.i-modal-layer {
 		user-select: none;
-
-		& * {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: 'Inter', sans-serif;
-		}
 		
 		&__i-modal-container {
 			position: fixed;
-			transform: translate(-50%, -50%) perspective(500px) rotateX(0deg);
+			transform: translate(-50%, -50%) perspective(1000px) rotateX(0deg);
 		}
 
 		&--active {
@@ -254,6 +262,7 @@
 	}
 
 	.i-modal-content {
+		height: inherit;
 		opacity: .3;
 		
 		&--active {
@@ -315,11 +324,14 @@
 	}
 	.i-modal-body {
 		height: 100%;
-		padding: 32px;
 		position: relative;
-		border-bottom-left-radius: 4px;
-		border-bottom-right-radius: 4px;
+		border-radius: 12px;
+		overflow: overlay;
 
+		&--radius {
+			border-top-right-radius: 0;
+			border-top-left-radius: 0;
+		}
 		&__i-body-close {
 			position: absolute;
 			top: 20px;
@@ -336,28 +348,42 @@
 		}
 	}
 
-	.i-modal-layer-enter-active {
-		animation: .5s enter-i-modal-layer;
-		@keyframes enter-i-modal-layer {
+	.default-enter-active,
+	.rotate-enter-active {
+		animation: .4s common-enter;
+		@keyframes common-enter {
 			0% { opacity: 0; }
 		}
 	}
-	.i-modal-layer-enter-active .i-modal-container {
-		animation: .5s enter-container-modal;
-		@keyframes enter-container-modal {
-			0% { transform: translate(-50%, -50%) perspective(500px) rotateY(-90deg); }
-		}
-	}
-	.i-modal-layer-leave-active {
-		animation: .5s leave-i-modal-layer;
-		@keyframes leave-i-modal-layer {
+	.default-leave-active,
+	.rotate-leave-active {
+		animation: .4s common-leave;
+		@keyframes common-leave {
 			100% { opacity: 0; }
 		}
 	}
-	.i-modal-layer-leave-active .i-modal-container {
-		animation: .5s leave-container-modal;
-		@keyframes leave-container-modal {
-			100% { transform: translate(-50%, -100vh) perspective(500px) rotateX(-90deg); }
+	.default-enter-active .i-modal-container {
+		animation: .4s default-enter;
+		@keyframes default-enter {
+			0% { transform: translate(-50%, 100vh); }
+		}
+	}
+	.rotate-enter-active .i-modal-container {
+		animation: .4s rotate-enter;
+		@keyframes rotate-enter {
+			0% { transform: translate(-50%, -50%) perspective(1000px) rotateY(-90deg); }
+		}
+	}
+	.default-leave-active .i-modal-container {
+		animation: .4s default-leave;
+		@keyframes default-leave {
+			100% { transform: translate(-50%, -100vh); }
+		}
+	}
+	.rotate-leave-active .i-modal-container {
+		animation: .4s rotate-leave;
+		@keyframes rotate-leave {
+			100% { transform: translate(-50%, -100vh) perspective(1000px) rotateX(-90deg); }
 		}
 	}
 </style>

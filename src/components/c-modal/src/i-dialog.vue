@@ -108,8 +108,6 @@ export default {
 </script>
 
 <style lang="scss">
-	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
-
 	.i-dialog-wrapper {
 		width: 100%;
 		height: 100%;
@@ -119,13 +117,6 @@ export default {
 		top: 0;
 		left: 0;
 		z-index: 999999;
-
-		& * {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: 'Inter', sans-serif;
-		}
 
 		&__i-dialog-container {
 			margin: auto;
@@ -210,27 +201,27 @@ export default {
 		}
 	}
 	.i-dialog-enter-active {
-		animation: .5s enter-wrapper-dialog;
+		animation: .4s enter-wrapper-dialog;
 		@keyframes enter-wrapper-dialog {
 			0% { opacity: 0; }
 		}
 	}
 	.i-dialog-enter-active .i-dialog-container {
-		animation: .5s enter-container-dialog;
+		animation: .4s enter-container-dialog;
 		@keyframes enter-container-dialog {
 			0% { transform: translateY(100vh); }
 		}
 	}
 	.i-dialog-leave-active {
-		animation: .5s leave-wrapper-dialog;
+		animation: .4s leave-wrapper-dialog;
 		@keyframes leave-wrapper-dialog {
 			100% { opacity: 0; }
 		}
 	}
 	.i-dialog-leave-active .i-dialog-container {
-		animation: .5s leave-container-dialog;
+		animation: .4s leave-container-dialog;
 		@keyframes leave-container-dialog {
-			100% { transform: translateY(-100vh) perspective(500px) rotateX(-90deg); }
+			100% { transform: translateY(-50vh) perspective(500px) rotateX(-90deg); }
 		}
 	}
 </style>
