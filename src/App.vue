@@ -15,8 +15,10 @@
       name="header1"
       width="100"
       headerTitle="header1header1header1header1header1header1header1"
+      :draggable="true"
       :header="true"
       :buttonClose="true"
+      :layer="false"
     >
       <!-- <div slot="header">new headernew headernew headernew headernew header</div> -->
       <div slot="body">
@@ -27,16 +29,24 @@
     <izi-modal
       name="header2"
       headerTitle="header2"
+      height="300"
+      :layer="false"
+      :draggable="true"
       :top="20"
       :left="20"
+      @opened="opened"
+      @closed="closed"
       :beforeOpen="beforeOpen"
+      :beforeClose="beforeClose"
     />
     <izi-modal
       name="header3"
       headerTitle="header3"
+      :height="501"
+      width="403"
       :top="70"
       :left="70"
-      :layer="true"
+      :layer="false"
       :layerClickToClose="true"
       :beforeClose="beforeClose"
     >
@@ -123,9 +133,18 @@ export default {
           ] 
       })
     },
+    opened(e) {
+      console.log('opened', e)
+    },
+    closed(e) {
+      console.log('closed', e)
+    },
     beforeOpen() {
-      // return false
       console.log('beforeOpen')
+    },
+    beforeClose() {
+      // return false
+      console.log('beforeClose')
     },
     open(name) {
       this.$iziModal.open(name)

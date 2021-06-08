@@ -1,7 +1,11 @@
 <template>
-	<transition :name="transition">
+	<transition :name="transition"
+		@enter="$emit('opened', $event)"
+		@leave="$emit('closed', $event)"
+	>
 		<div class="i-modal-layer"
 			v-if="isShow"
+			:name="name"
 			:ref="name"
 			:class="setClassActiveLayerModal"
 			:style="setStylePositionLevelLayerModal"
@@ -13,6 +17,7 @@
 			<div class="i-modal-container i-modal-layer__i-modal-container"
 				:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
 				:class="setClassActiveContainerModal"
+				:ref="`${name}-container`"
 				@mousedown="activate($event.target)"
 				@click.stop=""
 			>
@@ -143,15 +148,18 @@
 			fTop: 0,
 			fLeft: 0,
 			offsetTop: 0,
-			offsetLeft: 0
+			offsetLeft: 0,
+			tmpWidth: 0,
+			tmpHeight: 0,
 		}),
 		computed: {
 			setStylePositionContainerModal() {
+				console.log('?', this.tmpWidth, this.tmpHeight)
 				return {
 					top: `${this.fTop}${this.units}`,
 					left: `${this.fLeft}${this.units}`,
-					width: this.width === 'auto' ? this.width : `${this.width % 2 ? this.width - 1 : this.width}px`,
-					height: this.height === 'auto' ? this.height : `${this.height % 2 ? this.height - 1 : this.height}px`,
+					width: this.tmpWidth === 'auto' ? this.tmpWidth : `${this.tmpWidth}px`,
+					height: this.tmpHeight === 'auto' ? this.tmpHeight : `${this.tmpHeight}px`,
 					minWidth: `${this.minWidth}px`,
 					minHeight: `${this.minHeight}px`,
 				}
@@ -204,6 +212,25 @@
 				}
 			},
 		},
+		watch: {
+			isShow: {
+				immediate: true,
+				handler(show) {
+					this.tmpWidth = this.width
+					this.tmpHeight = this.height
+					
+					if (show) {
+						this.$nextTick(() => {
+							const initWidth = this.$refs[`${this.name}-container`].offsetWidth
+							const initHeight = this.$refs[`${this.name}-container`].offsetHeight
+
+							this.tmpWidth = this.width % 2 ? initWidth - 1 : initWidth
+							this.tmpHeight = this.height % 2 ? initHeight - 1 : initHeight
+						})
+					}
+				}
+			}
+		},
 		created() {
 			this.$iziModal.created(this, this.name)
 			this.fTop = +this.top
@@ -214,12 +241,6 @@
 					this.fTop = e.clientY - this.offsetTop
 					this.fLeft = e.clientX - this.offsetLeft
 				}
-			})
-		},
-		mounted() {
-			this.$nextTick(() => {
-				// определить auto, bclosed, bopened
-				console.log(this.$refs[this.name])
 			})
 		}
 	}

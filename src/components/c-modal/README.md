@@ -29,6 +29,18 @@
 		width="1000"
 		:height="600"
 	/>
+	<izi-modal
+		name="resource"
+		@opened="openModal"
+		@closed="closeModal"
+	>
+		<div slot="header-content">
+			Own header
+		</div>
+		<div slot="body-content">
+			Own body
+		</div>
+	</izi-modal>
 ```
 ```javascript
 	// Открыть модальное окно
