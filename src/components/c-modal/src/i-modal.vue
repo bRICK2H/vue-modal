@@ -154,7 +154,6 @@
 		}),
 		computed: {
 			setStylePositionContainerModal() {
-				console.log('?', this.tmpWidth, this.tmpHeight)
 				return {
 					top: `${this.fTop}${this.units}`,
 					left: `${this.fLeft}${this.units}`,
