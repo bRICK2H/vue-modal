@@ -17,7 +17,6 @@
 			<div class="i-modal-container i-modal-layer__i-modal-container"
 				:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
 				:class="setClassActiveContainerModal"
-				:ref="`${name}-container`"
 				@mousedown="activate($event.target)"
 				@click.stop=""
 			>
@@ -197,6 +196,7 @@
 				this.isGrab = false;
 			},
 			async close() {
+				const { key } = event
 				const isDialog = this.isActive
 					? await this.beforeClose()
 					: false
@@ -205,7 +205,8 @@
 				if (isDialog || isDialog === undefined || typeof isDialog === 'string') {
 					this.$iziModal.close(this.name)
 				} else {
-					if (this.$refs[this.name]) {
+					console.log(event)
+					if (this.$refs[this.name] && key === 'Escape') {
 						this.$refs[this.name].focus()
 					}
 				}
