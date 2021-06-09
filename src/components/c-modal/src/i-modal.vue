@@ -106,11 +106,11 @@
 			},
 			width: {
 				type: [Number, String],
-				default: 'auto'
+				default: 1000
 			},
 			height: {
 				type: [Number, String],
-				default: 'auto'
+				default: 800
 			},
 			minWidth: {
 				type: [Number, String],
@@ -149,16 +149,16 @@
 			fLeft: 0,
 			offsetTop: 0,
 			offsetLeft: 0,
-			tmpWidth: 0,
-			tmpHeight: 0,
+			defaultWidth: 1000,
+			defaultHeight: 800
 		}),
 		computed: {
 			setStylePositionContainerModal() {
 				return {
 					top: `${this.fTop}${this.units}`,
 					left: `${this.fLeft}${this.units}`,
-					width: this.tmpWidth === 'auto' ? this.tmpWidth : `${this.tmpWidth}px`,
-					height: this.tmpHeight === 'auto' ? this.tmpHeight : `${this.tmpHeight}px`,
+					width: `${this.width % 2 ? this.width - 1 : this.width}px`,
+					height: `${this.height % 2 ? this.height - 1 : this.height}px`,
 					minWidth: `${this.minWidth}px`,
 					minHeight: `${this.minHeight}px`,
 				}
@@ -210,25 +210,6 @@
 					}
 				}
 			},
-		},
-		watch: {
-			isShow: {
-				immediate: true,
-				handler(show) {
-					this.tmpWidth = this.width
-					this.tmpHeight = this.height
-					
-					if (show) {
-						this.$nextTick(() => {
-							const initWidth = this.$refs[`${this.name}-container`].offsetWidth
-							const initHeight = this.$refs[`${this.name}-container`].offsetHeight
-
-							this.tmpWidth = this.width % 2 ? initWidth - 1 : initWidth
-							this.tmpHeight = this.height % 2 ? initHeight - 1 : initHeight
-						})
-					}
-				}
-			}
 		},
 		created() {
 			this.$iziModal.created(this, this.name)

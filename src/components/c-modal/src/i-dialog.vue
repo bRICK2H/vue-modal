@@ -152,7 +152,6 @@ export default {
 		}
 	}
 	.i-dialog-title {
-		font-family: Inter;
 		font-weight: bold;
 		font-size: 20px;
 		line-height: 28px;
