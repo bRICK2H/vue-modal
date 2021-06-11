@@ -46,7 +46,7 @@
 					</div>
 					<div class="i-modal-body i-modal-content__i-modal-body"
 						:class="{ 'i-modal-body--radius': header }"
-						:style="{ padding: `${padding}px` }"
+						:style="[setStyleBodyHeight, { padding: `${padding}px` }]"
 					>
 						<span v-if="buttonClose && !header"
 							class="i-body-close i-modal-body__i-body-close"
@@ -149,7 +149,8 @@
 			offsetTop: 0,
 			offsetLeft: 0,
 			defaultWidth: 1000,
-			defaultHeight: 800
+			defaultHeight: 800,
+			headerHeight: 0,
 		}),
 		computed: {
 			setStylePositionContainerModal() {
@@ -168,6 +169,11 @@
 			setStylePositionLevelLayerModal() {
 				if (this.layer)
 					return { zIndex: `${this.zIndex + (this.index - 1)}` }
+			},
+			setStyleBodyHeight() {
+				return this.header
+					? { height: `calc(100% - ${this.headerHeight})` }
+					: { height: '100%' }
 			},
 			setClassActiveContainerModal() {
 				return { 'i-modal-container--active': this.isActive }
@@ -205,12 +211,19 @@
 				if (isDialog || isDialog === undefined || typeof isDialog === 'string') {
 					this.$iziModal.close(this.name)
 				} else {
-					console.log(event)
 					if (this.$refs[this.name] && key === 'Escape') {
 						this.$refs[this.name].focus()
 					}
 				}
 			},
+		},
+		watch: {
+			async isShow(show) {
+				if (show) {
+					await this.$nextTick()
+					this.headerHeight = getComputedStyle(document.querySelector('.i-modal-header')).height
+				}
+			}
 		},
 		created() {
 			this.$iziModal.created(this, this.name)
@@ -223,7 +236,7 @@
 					this.fLeft = e.clientX - this.offsetLeft
 				}
 			})
-		}
+		},
 	}
 </script>
 
@@ -328,7 +341,7 @@
 		height: 100%;
 		position: relative;
 		border-radius: 12px;
-		overflow: overlay;
+		overflow: auto;
 
 		&--radius {
 			border-top-right-radius: 0;
