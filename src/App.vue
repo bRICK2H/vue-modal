@@ -13,7 +13,8 @@
     
     <izi-modal
       name="header1"
-      width="100"
+      width="600"
+      height="500"
       headerTitle="header1header1header1header1header1header1header1"
       :draggable="true"
       :header="true"
@@ -21,9 +22,23 @@
       :layer="false"
     >
       <!-- <div slot="header">new headernew headernew headernew headernew header</div> -->
-      <div slot="body">
+      <div slot="body-content">
         <button @click="openDialog">open dialog</button>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
+        <div style="display:flex;">
+          <c-select 
+            width="200"
+            :options="[111111,222222222,3333333333,4444444444, 'incidunt culpa iusto deleniti tenetur officiis']"
+            :behavior="true"
+            :multiple="true"
+          />
+          <c-select 
+            width="200"
+            :options="[111111,222222222,3333333333,4444444444,'incidunt culpa iusto deleniti tenetur officiis']"
+            :behavior="false"
+          />
+        </div>
+        Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia atque optio veritatis perferendis sit blanditiis tenetur beatae quae molestias culpa necessitatibus odit quis saepe, error numquam modi id. Provident, distinctio?
       </div>
     </izi-modal>
     <izi-modal
@@ -109,10 +124,12 @@
 </template>
 
 <script>
+import CSelect from '../../vue-custom-select/src/plugin/c-select/src/c-select.vue'
+import cSelect from './components/c-modal/select/main'
 
 export default {
   name: 'App',
-  components: {},
+  components: {cSelect, CSelect},
   data: () => ({
     name: 'root'
   }),
