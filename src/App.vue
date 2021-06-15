@@ -23,22 +23,32 @@
     >
       <!-- <div slot="header">new headernew headernew headernew headernew header</div> -->
       <div slot="body-content">
+        <div>
+          {{ val }}
+        </div>
         <button @click="openDialog">open dialog</button>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
+        
         <div style="display:flex;">
           <c-select 
             width="200"
-            :options="[111111,222222222,3333333333,4444444444, 'incidunt culpa iusto deleniti tenetur officiis']"
+            v-model="val"
+            :options="options"
             :behavior="true"
             :multiple="true"
           />
           <c-select 
             width="200"
-            :options="[111111,222222222,3333333333,4444444444,'incidunt culpa iusto deleniti tenetur officiis']"
+            v-model="val"
+            :options="options"
             :behavior="false"
+            :multiple="true"
           />
         </div>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Mollitia atque optio veritatis perferendis sit blanditiis tenetur beatae quae molestias culpa necessitatibus odit quis saepe, error numquam modi id. Provident, distinctio?
+        <div style="display:flex;">
+      
+        </div>
+        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!<br />
       </div>
     </izi-modal>
     <izi-modal
@@ -131,7 +141,9 @@ export default {
   name: 'App',
   components: {cSelect, CSelect},
   data: () => ({
-    name: 'root'
+    name: 'root',
+    val: ['cc'],
+    options: ['a', 'b', 'cc','incidunt culpa iusto deleniti tenetur officiis']
   }),
   methods: {
     async beforeClose() {

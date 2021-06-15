@@ -30,7 +30,7 @@
 			<template v-else>
 				<div class="select-name v-selected__select-name"
 					:class="{'select-name--multiple': multiple}"
-					v-for="(element, i) of selected"
+					v-for="(select, i) of selected"
 					:key="`sl${i}`"
 				>
 					<span class="select-box-name select-name__select-box-name"
@@ -40,8 +40,10 @@
 							'select-box-name--mr': multiple && (!clearable && selected.length !== 1 || clearable)
 						}"
 					>
-						<slot name="select" v-bind="element">
-							{{ innerReduce(element, s_label) }}
+						<!-- :title="innerReduce(select, s_label)" -->
+						<slot name="select" v-bind="select">
+							<!-- {{ innerReduce(select, s_label) }} -->
+							{{ select }}
 						</slot>
 					</span>
 					<div>
@@ -102,14 +104,15 @@
 						:class="[...classes, { 'option--arrow': currOptionArrow === i + 1 }]"
 						v-for="(option, i) of cloneOptions"
 						:key="i"
-						:title="innerReduce(option, o_label)"
 						@mouseenter="hoverOption(i + 1)"
 						@click="select(option)"
 					>
+						<!-- :title="innerReduce(option, o_label)" -->
 
 						<div class="option__name">
 							<slot name="option" v-bind="option" >
-									{{ innerReduce(option, o_label) }}
+									<!-- {{ innerReduce(option, o_label) }} -->
+									{{ option }}
 							</slot>
 						</div>
 						
@@ -139,10 +142,11 @@ export default {
 			type: String,
 			default: 'Добавить'
 		},
-		value: {
-			type: Array,
-			default: () => ([])
-		},
+		// value: {
+		// 	type: Array,
+		// 	default: () => ([])
+		// },
+		value: null,
 		options: {
 			type: Array,
 			default: () => ([])
@@ -214,25 +218,37 @@ export default {
 	},
 	methods: {
 		select(option) {
-			const selectedIndex = this.cloneOptions.findIndex(curr => {
-				return  JSON.stringify(curr) === JSON.stringify(option)
-			})
-
+			console.log('option: ', option)
 			if (this.multiple) {
-				this.selected.push(...this.cloneOptions.splice(selectedIndex, 1))
+				this.selected.push(option)
 			} else {
-				if (this.selected.length) {
-					this.cloneOptions.push(...this.selected.splice(0, 1))
-				}
-
-				this.selected = this.cloneOptions.splice(selectedIndex, 1)
+				this.selected.splice(0, 1, option)
 			}
+			
+			// const selectedIndex = this.cloneOptions.findIndex(curr => {
+			// 	return  JSON.stringify(curr) === JSON.stringify(option)
+			// })
 
-			this.$emit('input', this.outerReduce(this.selected))
+			// if (this.multiple) {
+			// 	this.selected.push(...this.cloneOptions.splice(selectedIndex, 1))
+			// } else {
+			// 	if (this.selected.length) {
+			// 		this.cloneOptions.push(...this.selected.splice(0, 1))
+			// 	}
+
+			// 	this.selected = this.cloneOptions.splice(selectedIndex, 1)
+			// }
+
+			// this.$emit('input', this.outerReduce(this.selected))
 		},
 		drop(i) {
-			this.cloneOptions.push(...this.selected.splice(i, 1))
-			this.$emit('input', this.outerReduce(this.selected))
+			// this.cloneOptions.push(...this.selected.splice(i, 1))
+			// this.$emit('input', this.outerReduce(this.selected))
+			if (this.multiple) {
+				this.selected.splice(i, 1)
+			} else {
+				this.selected = []
+			}
 		},
 		enterToFocus(e) {
 			if (this.cloneOptions.length) {
@@ -268,35 +284,35 @@ export default {
 
 			this.isOpenSelect = false
 		},
-		outerReduce(arr) {
-			return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
-		},
-		innerReduce(el, label) {
-			if (Array.isArray(el)) {
-				return el.flat().join(', ')
-			} else if (typeof el === 'object') {
-				if (Array.isArray(label)) {
-					return  label.map(l => el[l]).join(', ')
-				} else if (typeof label === 'function') {
-					if (label(el) === undefined) {
-						console.warn(`[custom_select]: ${label} Не верно введено имя свойства объекта.`)
-						return el
-					} else if (Array.isArray(label(el))) {
-						return label(el).join(', ')
-					} else if (typeof label(el) === 'object') {
-						return Object.values(label(el)).join(', ')
-					} else {
-						return label(el)
-					}
-				} else {
-					return label in el
-						? el[label]
-						: Object.values(el).join(', ')
-				}
-			} else {
-				return el
-			}
-		},
+		// outerReduce(arr) {
+		// 	return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
+		// },
+		// innerReduce(el, label) {
+		// 	if (Array.isArray(el)) {
+		// 		return el.flat().join(', ')
+		// 	} else if (typeof el === 'object') {
+		// 		if (Array.isArray(label)) {
+		// 			return  label.map(l => el[l]).join(', ')
+		// 		} else if (typeof label === 'function') {
+		// 			if (label(el) === undefined) {
+		// 				console.warn(`[custom_select]: ${label} Не верно введено имя свойства объекта.`)
+		// 				return el
+		// 			} else if (Array.isArray(label(el))) {
+		// 				return label(el).join(', ')
+		// 			} else if (typeof label(el) === 'object') {
+		// 				return Object.values(label(el)).join(', ')
+		// 			} else {
+		// 				return label(el)
+		// 			}
+		// 		} else {
+		// 			return label in el
+		// 				? el[label]
+		// 				: Object.values(el).join(', ')
+		// 		}
+		// 	} else {
+		// 		return el
+		// 	}
+		// },
 		toggleSelect() { this.isOpenSelect = !this.isOpenSelect },
 		setCurrSelectCoords() {
 			const { top, left, width } = this.$refs['selected'].getBoundingClientRect()
@@ -313,50 +329,105 @@ export default {
 	watch: {
 		value: {
 			immediate: true,
+			deep: true,
 			handler(value) {
-				if (value.length) {
-					if (!this.isLoadWithChangedValue) {
-						if(this.multiple) {
-							this.selected = value
-							this.cloneOptions = this.options.filter(opt => {
-								return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
-							})
-						} else {
-							if (value.length > 1) {
-								const unique = Array.from(new Set([...value, ...this.options].map(JSON.stringify))).map(JSON.parse)
-								this.selected = value.slice(0, 1)
-								this.cloneOptions = unique.filter(uq => {
-									return value.slice(1).map(val => JSON.stringify(val)).includes(JSON.stringify(uq))
-								})
-								console.warn(`[custom_select]: "v-model/value" должен принимать массив из одного элемента, т.к. свойство multiple="false". В данном случае selected будет равен [0-му элементу] все остальное уйдет в options`)
-							} else {
-								this.selected = value
-								this.cloneOptions = [...value, ...this.options].filter(el => {
-									return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(el)))
-								})
-							}
-						}
+				console.log(JSON.stringify(value) === JSON.stringify(this.selected))
+				// console.log(`3: watch: ${this.uniquedd}`, value, this.options)
 
-						this.isLoadWithChangedValue = true
-					} 
+				const initValues = val => {
+					this.selected.push(...val)
+					console.log(this.selected)
+					this.cloneOptions = this.options.filter(curr => !this.selected.includes(curr))
+				}
+
+				// if (this.multiple) {
+				// 	if (value && Array.isArray(value)) {
+				// 		initValues(value)
+				// 	} else {
+				// 		console.warn('При множественном выборе (multiple:true), необходимо передовать массив из выбранных по умолчанию элементов!')
+				// 	}
+				// } else {
+				// 	if (value && !Array.isArray(value)) {
+				// 		// initValues(value)
+				// 		// this.selected.push(value)
+				// 		// this.cloneOptions = this.options.filter(curr => !this.selected.includes(curr))
+				// 		console.log(this.cloneOptions)
+				// 	} else {
+				// 		console.warn('При единственном выборе (multiple:false), необходимо передовать значение по умолчанию в скалярном (простом) виде!')
+				// 	}
+				// }
+
+
+				if (this.multiple) {
+					if (value && Array.isArray(value)) {
+						initValues(value)
+					} else {
+						console.warn('При множественном выборе (multiple:true), необходимо передовать массив из выбранных по умолчанию элементов!')
+					}
+				}
+
+				if (!this.multiple) {
+					if (value && !Array.isArray(value)) {
+						this.selected.push(value)
+						this.cloneOptions = this.options.filter(curr => !this.selected.includes(curr))
+					}
 				}
 			}
 		},
-		options: {
-			immediate: true,
-			handler(options) {
-				if (this.value) {
-					this.cloneOptions = options.filter(opt => {
-						return !(this.value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
-					})
-				} else {
-					this.cloneOptions = JSON.parse(JSON.stringify(options))
-				}
+		selected: {
+			deep: true,
+			handler(selected) {
+				this.isOpenSelect = false
+				// console.log('s: ', this.multiple ? selected : selected[0])
+				this.$emit('input', selected)
 			}
 		},
-		selected() {
-			this.isOpenSelect = false
-		},
+		// value: {
+		// 	immediate: true,
+		// 	handler(value) {
+		// 		if (value.length) {
+		// 			if (!this.isLoadWithChangedValue) {
+		// 				if(this.multiple) {
+		// 					this.selected = value
+		// 					this.cloneOptions = this.options.filter(opt => {
+		// 						return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
+		// 					})
+		// 				} else {
+		// 					if (value.length > 1) {
+		// 						const unique = Array.from(new Set([...value, ...this.options].map(JSON.stringify))).map(JSON.parse)
+		// 						this.selected = value.slice(0, 1)
+		// 						this.cloneOptions = unique.filter(uq => {
+		// 							return value.slice(1).map(val => JSON.stringify(val)).includes(JSON.stringify(uq))
+		// 						})
+		// 						console.warn(`[custom_select]: "v-model/value" должен принимать массив из одного элемента, т.к. свойство multiple="false". В данном случае selected будет равен [0-му элементу] все остальное уйдет в options`)
+		// 					} else {
+		// 						this.selected = value
+		// 						this.cloneOptions = [...value, ...this.options].filter(el => {
+		// 							return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(el)))
+		// 						})
+		// 					}
+		// 				}
+
+		// 				this.isLoadWithChangedValue = true
+		// 			} 
+		// 		}
+		// 	}
+		// },
+		// options: {
+		// 	immediate: true,
+		// 	handler(options) {
+		// 		if (this.value) {
+		// 			this.cloneOptions = options.filter(opt => {
+		// 				return !(this.value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
+		// 			})
+		// 		} else {
+		// 			this.cloneOptions = JSON.parse(JSON.stringify(options))
+		// 		}
+		// 	}
+		// },
+		// selected() {
+		// 	this.isOpenSelect = false
+		// },
 		isOpenSelect(opened) {
 			this.setCurrSelectCoords()
 
@@ -381,14 +452,14 @@ export default {
 		// 	if (this.$refs['selected']) this.setSelectCoords()
 		// })
 
-		if (this.behavior) {
+		if (this.behavior && this.$refs['select-container']) {
 			let start = true
 			let primaryEl = this.$refs['select-container'].parentElement
 
 			while(start) {
 				primaryEl = primaryEl.parentElement
 				const primaryElOverfow = getComputedStyle(primaryEl).overflow
-				
+
 				if (primaryEl.tagName === 'BODY') start = false
 				if (primaryElOverfow === 'scroll' || primaryElOverfow === 'auto') {
 					primaryEl.addEventListener('scroll', () => {
@@ -582,6 +653,7 @@ export default {
 			background-color: #dfdfdf;
 		}
 		&__name {
+			width: 100%;
 			height: auto;
 			display: inline-block;
 			position: absolute;
