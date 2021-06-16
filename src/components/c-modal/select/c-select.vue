@@ -153,7 +153,7 @@ export default {
 		},
 		reduce: {
 			type: Function,
-			default: option => option
+			default: option => option,
 		},
 		s_label: {
 			type: [String, Array, Function],
@@ -216,6 +216,9 @@ export default {
 				minWidth: `${+this.width}px`,
 			}
 		},
+		isTransferredReducer() {
+			return JSON.stringify(this.value) !== JSON.stringify(this.value.map(curr => this.reduce(curr)))
+		}
 	},
 	methods: {
 		select(option) {
@@ -288,8 +291,8 @@ export default {
 
 			this.isOpenSelect = false
 		},
-			outerReduce(arr) {
-			return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
+		outerReduce(arr) {
+		return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
 		},
 		innerReduce(el, label) {
 			if (Array.isArray(el)) {
@@ -331,20 +334,34 @@ export default {
 		},
 		updateOptions(selected) {
 			this.cloneOptions = this.options.filter(curr => !JSON.stringify(selected).includes(JSON.stringify(curr)))
-		}
+		},
+
 	},
 	watch: {
 		value: {
 			immediate: true,
 			deep: true,
 			handler(value) {
-
+				// Начинать от сюда
+				console.log(this.isTransferredReducer, value, this.selected)
 				if (JSON.stringify(value) !== JSON.stringify(this.selected)) {
 					if (this.multiple) {
 						if (Array.isArray(value)) {
-							this.selected = !this.options.some(curr => JSON.stringify(value).includes(JSON.stringify(curr)))
-								? []
-								: JSON.parse(JSON.stringify(value))
+							if (this.isTransferredReducer) {
+								this.selected = !this.options.some(curr => {
+									return JSON.stringify(this.reduce(value)).includes(JSON.stringify(this.reduce(curr)))
+								})
+									? []
+									: JSON.parse(JSON.stringify(value)).map(curr => {
+										console.log('curr: ', this.reduce(curr))
+										return this.reduce(curr)
+									})
+								console.log('HERE? ', this.selected)
+							} else {
+								this.selected = !this.options.some(curr => JSON.stringify(value).includes(JSON.stringify(curr)))
+									? []
+									: JSON.parse(JSON.stringify(value))
+							}
 						} else {
 							this.selected = []
 							this.isStopReactiveChanges = true
@@ -353,10 +370,10 @@ export default {
 					} else {
 						if (!Array.isArray(value)) {
 							this.selected = !this.options.some(curr => JSON.stringify(value) === JSON.stringify(curr))
-								? ''
+								? null
 								: value
 						} else {
-							this.selected = ''
+							this.selected = null
 							this.isStopReactiveChanges = true
 							console.warn('[select]: При единственном выборе (multiple:false), value ожидает примитивный тип данных!')
 						}
@@ -367,8 +384,8 @@ export default {
 			}
 		},
 		selected: {
+			// immediate: true, // под вопросом
 			deep: true,
-			immediate: true,
 			handler(selected) {
 				console.log('TOTAL SELECTED: ', selected)
 				this.isOpenSelect = false
@@ -379,7 +396,7 @@ export default {
 					// const tmp = selected.map(curr => {
 					// 	return this.reduce(curr)
 					// })
-					console.log('tmp: ', this.outerReduce(selected))
+					// console.log('tmp: ', this.outerReduce(selected))
 					this.$emit('input', selected)
 				}
 			}

@@ -14,7 +14,7 @@
     <izi-modal
       name="header1"
       width="600"
-      height="500"
+      height="700"
       headerTitle="header1header1header1header1header1header1header1"
       :draggable="true"
       :header="true"
@@ -30,15 +30,15 @@
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
         
         <div style="display:flex;">
-          <c-select 
+          <!-- <c-select 
             width="200"
             v-model="val"
             :options="options"
             :behavior="true"
             :multiple="true"
             s_label="name"
-            :reduce="o => o.name"
-          />
+            :reduce="o => o"
+          /> -->
           <c-select 
             width="200"
             v-model="val"
@@ -55,14 +55,14 @@
             label="name"
             v-model="val"
             :options="options"
-            :multiple="false"
-            :reduce="o => o.name"
+            :multiple="true"
+            :reduce="o => o"
           />
           <v-select style="width:200px"
             label="name"
             v-model="val"
             :options="options"
-            :multiple="false"
+            :multiple="true"
             :reduce="o => o.name"
           /> -->
         </div>
