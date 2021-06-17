@@ -30,7 +30,7 @@
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
         
         <div style="display:flex;">
-          <!-- <c-select 
+          <c-select 
             width="200"
             v-model="val"
             :options="options"
@@ -38,7 +38,7 @@
             :multiple="true"
             s_label="name"
             :reduce="o => o"
-          /> -->
+          />
           <c-select 
             width="200"
             v-model="val"
@@ -46,7 +46,7 @@
             :behavior="false"
             :multiple="true"
             s_label="name"
-            :reduce="o => o.name"
+            :reduce="o => o"
           />
         </div>
 
@@ -160,9 +160,9 @@ export default {
   components: {cSelect, CSelect},
   data: () => ({
     name: 'root',
-    // val: ['cc'],
+    // val: 'cc',
     // options: ['a', 'b', 'cc','incidunt culpa iusto deleniti tenetur officiis'],
-    val: [],
+    val: { id: 2, name: 'Педикюр', price: 300 },
     options: [
       { id: 1, name: 'Маникюр-хороший', price: 490 },
       { id: 2, name: 'Педикюр', price: 300 },
