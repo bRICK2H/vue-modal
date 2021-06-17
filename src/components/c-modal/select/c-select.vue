@@ -246,13 +246,13 @@ export default {
 		select(option) {
 			console.log('option: ', option)
 			if (this.multiple) {
-				Array.isArray(this.value)
-					? this.selected.push(option)
-					: this.selected = [option]
+				// Array.isArray(this.value)
+				// 	? this.selected.push(option)
+				// 	: this.selected = [option]
+				this.selected.push(...this.filterList('selected', option))
 
 			} else {
 				this.selected.splice(0, 1, option)
-				// this.selected = this.sourceSelected = option
 			}
 			
 			// const selectedIndex = this.cloneOptions.findIndex(curr => {
@@ -360,88 +360,132 @@ export default {
 		// updateOptions(selected) {
 		// 	this.cloneOptions = this.options.filter(curr => !JSON.stringify(selected).includes(JSON.stringify(curr)))
 		// },
-		updateOptions(selected) {
-			const MSelected = Array.isArray(selected) ? selected : [selected]
-			console.log('updateOptions', MSelected.map(c => typeof c === 'object' ? JSON.stringify(this.reduce(c)) : c),
-				this.options.map(JSON.stringify)
-			)
+		// updateOptions(selected) {
+		// 	const MSelected = Array.isArray(selected) ? selected : [selected]
+		// 	console.log('updateOptions', MSelected.map(c => typeof c === 'object' ? JSON.stringify(this.reduce(c)) : c),
+		// 		this.options.map(JSON.stringify)
+		// 	)
 			
-			this.cloneOptions = this.options
-				.filter(curr => {
-					return !MSelected
-						.map(c => typeof c === 'object'
-							? JSON.stringify(this.reduce(c))
-							: JSON.stringify(c))
-						.includes(JSON.stringify(this.reduce(curr)))
-				})
+		// 	this.cloneOptions = this.options
+		// 		.filter(curr => {
+		// 			return !MSelected
+		// 				.map(c => typeof c === 'object'
+		// 					? JSON.stringify(this.reduce(c))
+		// 					: JSON.stringify(c))
+		// 				.includes(JSON.stringify(this.reduce(curr)))
+		// 		})
+		// },
+		reduceValue(value) {
+			return Array.isArray(value)
+				? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
+				: typeof value === 'object' ? this.reduce(value) : value
 		},
-
+		filterList(rule, value) {
+			return this.options.filter(curr => {
+				if (Array.isArray(this.reduceValue(value))) {
+					const fArray = this.reduceValue(value).map(JSON.stringify).includes(JSON.stringify(this.reduce(curr)))
+					return rule === 'selected' ? fArray : !fArray
+				} else if (typeof this.reduceValue(value) === 'object') {
+					const fObject = JSON.stringify(this.reduceValue(value)).includes(JSON.stringify(this.reduce(curr)))
+					return rule === 'selected' ? fObject : !fObject
+				} else {
+					const fOther = this.reduceValue(value).includes(this.reduce(curr))
+					return rule === 'selected' ? fOther : !fOther
+				}
+			})
+		}
 	},
 	watch: {
 		value: {
 			immediate: true,
 			deep: true,
 			handler(value) {
-				if (!this.load) {
-					this.load = true
-					// this.sourceSelected = value
-				}
-				// Начинать от сюда
-				
-				// if (this.isTransferredReducer) {
+				console.log('value', value)
+				console.log('reducedValue: ', this.reduceValue(value))
 
-					const reducedValue = Array.isArray(value)
-						? value.length
-							? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
-							: []
-						: typeof value === 'object'
-							? this.reduce(value)
-							: value
-					
-					
-					if (JSON.stringify(reducedValue) !== JSON.stringify(this.selected)) {
-						if (this.multiple) {
-							if (Array.isArray(reducedValue)) {
-								this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
-									? []
-									: JSON.parse(JSON.stringify(reducedValue))
-							} else {
-								this.selected = []
-								this.isStopReactiveChanges = true
-								console.warn('[izi-select]: При множественном выборе (multiple:true), value ожидает массив значений по умолчанию!')
-							}
-						} else {
-							if (!Array.isArray(reducedValue)) {
-								this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
-									? []
-									: reducedValue
-							} else {
-								this.selected = []
-								this.isStopReactiveChanges = true
-								console.warn('[izi-select]: При единственном выборе (multiple:false), value ожидает примитивный тип данных!')
-							}
-						}
-					}
-
-				// }
-
-				this.updateOptions(this.selected)
+				console.log('filterList /s/o: ', this.filterList('selected', value), this.filterList('options', value))
+				this.selected = JSON.parse(JSON.stringify(this.filterList('selected', value)))
+				this.cloneOptions = this.filterList('options', value)
 			}
 		},
 		selected: {
 			deep: true,
-			immediate: true,
 			handler(selected) {
+				console.log('selected', selected, this.selected.map(curr => this.reduce(curr)))
 				this.isOpenSelect = false
-
-				if (this.isStopReactiveChanges) {
-					this.isStopReactiveChanges = false
-				} else {
-					console.log('Before:selected', selected)
-					this.$emit('input', selected)
-				}
+				// this.cloneOptions = this.filterList('options', selected)
+				// this.$emit('input', selected)
 			}
 		},
+
+
+		// + - work allwave
+		// value: {
+		// 	immediate: true,
+		// 	deep: true,
+		// 	handler(value) {
+		// 		if (!this.load) {
+		// 			this.load = true
+		// 			// this.sourceSelected = value
+		// 		}
+		// 		// Начинать от сюда
+				
+		// 		// if (this.isTransferredReducer) {
+
+		// 			const reducedValue = Array.isArray(value)
+		// 				? value.length
+		// 					? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
+		// 					: []
+		// 				: typeof value === 'object'
+		// 					? this.reduce(value)
+		// 					: value
+					
+					
+		// 			if (JSON.stringify(reducedValue) !== JSON.stringify(this.selected)) {
+		// 				if (this.multiple) {
+		// 					if (Array.isArray(reducedValue)) {
+		// 						this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
+		// 							? []
+		// 							: JSON.parse(JSON.stringify(reducedValue))
+		// 					} else {
+		// 						this.selected = []
+		// 						this.isStopReactiveChanges = true
+		// 						console.warn('[izi-select]: При множественном выборе (multiple:true), value ожидает массив значений по умолчанию!')
+		// 					}
+		// 				} else {
+		// 					if (!Array.isArray(reducedValue)) {
+		// 						this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
+		// 							? []
+		// 							: reducedValue
+		// 					} else {
+		// 						this.selected = []
+		// 						this.isStopReactiveChanges = true
+		// 						console.warn('[izi-select]: При единственном выборе (multiple:false), value ожидает примитивный тип данных!')
+		// 					}
+		// 				}
+		// 			}
+
+		// 		// }
+
+		// 		this.updateOptions(this.selected)
+		// 	}
+		// },
+		// selected: {
+		// 	deep: true,
+		// 	immediate: true,
+		// 	handler(selected) {
+		// 		this.isOpenSelect = false
+
+		// 		if (this.isStopReactiveChanges) {
+		// 			this.isStopReactiveChanges = false
+		// 		} else {
+		// 			console.log('Before:selected', selected)
+		// 			this.$emit('input', selected)
+		// 		}
+		// 	}
+		// },
+
+		// work with only full data
 		
 		// value: {
 		// 	immediate: true,

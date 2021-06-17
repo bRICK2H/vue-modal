@@ -37,9 +37,9 @@
             :behavior="true"
             :multiple="true"
             s_label="name"
-            :reduce="o => o"
+            :reduce="o => o.name"
           />
-          <c-select 
+          <!-- <c-select 
             width="200"
             v-model="val"
             :options="options"
@@ -47,7 +47,7 @@
             :multiple="true"
             s_label="name"
             :reduce="o => o"
-          />
+          /> -->
         </div>
 
         <div style="display:flex;">
