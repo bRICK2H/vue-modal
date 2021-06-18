@@ -35,18 +35,17 @@
             v-model="val"
             :options="options"
             :behavior="true"
-            :multiple="true"
+            :multiple="false"
             s_label="name"
-            :reduce="o => o.name"
+            label="name"
           />
           <!-- <c-select 
             width="200"
             v-model="val"
             :options="options"
             :behavior="false"
-            :multiple="true"
+            :multiple="false"
             s_label="name"
-            :reduce="o => o"
           /> -->
         </div>
 
@@ -62,8 +61,8 @@
             label="name"
             v-model="val"
             :options="options"
-            :multiple="true"
-            :reduce="o => o.name"
+            :multiple="false"
+            :reduce="o => o"
           /> -->
         </div>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!<br />
@@ -160,15 +159,18 @@ export default {
   components: {cSelect, CSelect},
   data: () => ({
     name: 'root',
-    // val: 'cc',
-    // options: ['a', 'b', 'cc','incidunt culpa iusto deleniti tenetur officiis'],
-    val: { id: 2, name: 'Педикюр', price: 300 },
-    options: [
-      { id: 1, name: 'Маникюр-хороший', price: 490 },
-      { id: 2, name: 'Педикюр', price: 300 },
-      { id: 3, name: 'Мужская косметология', price: 99 },
-      { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
-    ]
+    val: [{ id: 1, name2: 'Маникюр-хороший', price: 490 }],
+    // val: 'Маникюр-хороший',
+    // options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела'],
+    options: [490, 300, 99, 33]
+    // options: [
+    //   { id: 1, name: 'Маникюр-хороший', price: 490 },
+    //   { id: 2, name: 'Педикюр', price: 300 },
+    //   { id: 3, name: 'Мужская косметология', price: 99 },
+    //   { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
+    // ],
+    // val: ['Маникюр-хороший'],
+    // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
   methods: {
     async beforeClose() {

@@ -13,7 +13,7 @@
 			:tabindex="tabindex"
 			ref="selected"
 			@blur="blur($event)"
-			@keydown.enter="enterToFocus($event)"
+			@keydown.enter="enterToFocus"
 			@keydown.up.down.prevent="arrowToFocus($event)"
 			@click="(!multiple && cloneOptions.length) || (!Object.keys(selected).length && !cloneOptions.length)
 				? toggleSelect()
@@ -30,7 +30,7 @@
 			<template v-else>
 				<div class="select-name v-selected__select-name"
 					:class="{'select-name--multiple': multiple}"
-					v-for="(select, i) of multiple ? selected : [selected]"
+					v-for="(select, i) of selected"
 					:key="`sl${i}`"
 				>
 					<span class="select-box-name select-name__select-box-name"
@@ -105,14 +105,12 @@
 						:key="i"
 						@mouseenter="hoverOption(i + 1)"
 						@click="select(option)"
+						:title="innerReduce(option, o_label)"
 					>
-						<!-- :title="innerReduce(option, o_label)" -->
 
 						<div class="option__name">
 							<slot name="option" v-bind="option" >
-									{{ innerReduce(option, s_label) }}
-									<!-- {{ innerReduce(option, o_label) }} -->
-									<!-- {{ option }} -->
+								{{ innerReduce(option, o_label) }}
 							</slot>
 						</div>
 						
@@ -130,7 +128,7 @@ import iArrowDown from './components/svg/arrow-down-svg'
 import iHorLine from './components/svg/hor-line-svg'
 
 export default {
-	name: 'cSelect',
+	name: 'iziSelect',
 	components: { 
 		iAdd,
 		iClose,
@@ -142,10 +140,6 @@ export default {
 			type: String,
 			default: 'Добавить'
 		},
-		// value: {
-		// 	type: Array,
-		// 	default: () => ([])
-		// },
 		value: null,
 		options: {
 			type: Array,
@@ -154,6 +148,10 @@ export default {
 		reduce: {
 			type: Function,
 			default: option => option,
+		},
+		label: {
+			type: String,
+			default: 'label'
 		},
 		s_label: {
 			type: [String, Array, Function],
@@ -173,7 +171,7 @@ export default {
 		},
 		width: {
 			type: [String, Number],
-			default: 150
+			default: 'auto'
 		},
 		behavior: {
 			type: Boolean,
@@ -185,18 +183,13 @@ export default {
 		}
 	},
 	data: () => ({
-		isLoadWithChangedValue: false,
 		isOpenSelect: false,
 		cloneOptions: [],
-
 		tabindex: 0,
 		currOptionArrow: 1,
 		uniquedd: `dropdown-list:${Math.random()}`,
 		currSelectCoords: {},
 		selected: [],
-		sourceSelected: [],
-		isStopReactiveChanges: false,
-		load: false
 	}),
 	computed: {
 		setStylesToDropDownList() {
@@ -214,75 +207,27 @@ export default {
 		},
 		setStyleToSelect() {
 			return {
-				width: `${+this.width}px`,
+				width: this.width === 'auto' ? '100%' : `${+this.width}px`,
 				minWidth: `${+this.width}px`,
 			}
-		},
-		// isTransferredReducer() {
-		// 	console.log('HERE: ', this.sourceSelected)
-		// 	const isCollectionObject = Array.isArray(this.sourceSelected) && this.sourceSelected.every(curr => typeof curr === 'object')
-		// 	const isSingleObject = !Array.isArray(this.sourceSelected) && typeof this.sourceSelected === 'object'
-		// 	const warningReduce = '[izi-select]: Название возвращаемого свойства объекта в параметре функции reduce не существует!'
-			
-		// 	console.log({isCollectionObject, isSingleObject}, this.sourceSelected)
-		// 	if (isCollectionObject) {
-		// 		if (this.sourceSelected.every(curr => this.reduce(curr) === undefined)) {
-		// 			console.warn(`${warningReduce}`)
-		// 			return true
-		// 		}
-
-		// 		return JSON.stringify(this.sourceSelected) !== JSON.stringify(this.sourceSelected.map(curr => this.reduce(curr)))
-		// 	} else if (isSingleObject) {
-		// 		if (this.reduce(this.sourceSelected) === undefined) {
-		// 			console.warn(`${warningReduce}`)
-		// 			return true
-		// 		}
-		// 		return JSON.stringify(this.sourceSelected) !== JSON.stringify(this.reduce(this.sourceSelected))
-		// 	}
-
-		// }
+		}
 	},
 	methods: {
-		select(option) {
-			console.log('option: ', option)
+		select(option) {			
 			if (this.multiple) {
-				// Array.isArray(this.value)
-				// 	? this.selected.push(option)
-				// 	: this.selected = [option]
-				this.selected.push(...this.filterList('selected', option))
-
+				this.selected.push(this.filterList('selected', 'find', option))
 			} else {
 				this.selected.splice(0, 1, option)
 			}
-			
-			// const selectedIndex = this.cloneOptions.findIndex(curr => {
-			// 	return  JSON.stringify(curr) === JSON.stringify(option)
-			// })
-
-			// if (this.multiple) {
-			// 	this.selected.push(...this.cloneOptions.splice(selectedIndex, 1))
-			// } else {
-			// 	if (this.Object.keys(selected).length) {
-			// 		this.cloneOptions.push(...this.selected.splice(0, 1))
-			// 	}
-
-			// 	this.selected = this.cloneOptions.splice(selectedIndex, 1)
-			// }
-
-			// this.$emit('input', this.outerReduce(this.selected))
 		},
 		drop(i) {
-			// this.cloneOptions.push(...this.selected.splice(i, 1))
-			// this.$emit('input', this.outerReduce(this.selected))
 			if (this.multiple) {
 				this.selected.splice(i, 1)
-				// this.sourceSelected.splice(i, 1)
 			} else {
 				this.selected = []
-				// this.selected = this.sourceSelected = null
 			}
 		},
-		enterToFocus(e) {
+		enterToFocus() {
 			if (this.cloneOptions.length) {
 				this.toggleSelect()
 			}
@@ -317,7 +262,7 @@ export default {
 			this.isOpenSelect = false
 		},
 		outerReduce(arr) {
-		return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
+			return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
 		},
 		innerReduce(el, label) {
 			if (Array.isArray(el)) {
@@ -357,31 +302,13 @@ export default {
 				this.$set(this.currSelectCoords, 'height', height)
 			})
 		},
-		// updateOptions(selected) {
-		// 	this.cloneOptions = this.options.filter(curr => !JSON.stringify(selected).includes(JSON.stringify(curr)))
-		// },
-		// updateOptions(selected) {
-		// 	const MSelected = Array.isArray(selected) ? selected : [selected]
-		// 	console.log('updateOptions', MSelected.map(c => typeof c === 'object' ? JSON.stringify(this.reduce(c)) : c),
-		// 		this.options.map(JSON.stringify)
-		// 	)
-			
-		// 	this.cloneOptions = this.options
-		// 		.filter(curr => {
-		// 			return !MSelected
-		// 				.map(c => typeof c === 'object'
-		// 					? JSON.stringify(this.reduce(c))
-		// 					: JSON.stringify(c))
-		// 				.includes(JSON.stringify(this.reduce(curr)))
-		// 		})
-		// },
 		reduceValue(value) {
 			return Array.isArray(value)
 				? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
 				: typeof value === 'object' ? this.reduce(value) : value
 		},
-		filterList(rule, value) {
-			return this.options.filter(curr => {
+		filterList(rule, method, value) {
+			return this.options[method](curr => {
 				if (Array.isArray(this.reduceValue(value))) {
 					const fArray = this.reduceValue(value).map(JSON.stringify).includes(JSON.stringify(this.reduce(curr)))
 					return rule === 'selected' ? fArray : !fArray
@@ -389,10 +316,24 @@ export default {
 					const fObject = JSON.stringify(this.reduceValue(value)).includes(JSON.stringify(this.reduce(curr)))
 					return rule === 'selected' ? fObject : !fObject
 				} else {
-					const fOther = this.reduceValue(value).includes(this.reduce(curr))
-					return rule === 'selected' ? fOther : !fOther
+					if (Array.isArray(this.reduce(curr))) {
+						// обработать
+					} else if (typeof this.reduce(curr) === 'object') {
+						const fPrimitiveFromObject = Object.values(this.reduce(curr)).includes(value)
+						return rule === 'selected' ? fPrimitiveFromObject : !fPrimitiveFromObject
+					} else {
+						const fOther = this.reduceValue(value) === this.reduce(curr)
+						return rule === 'selected' ? fOther : !fOther
+					}
 				}
 			})
+		},
+		isChosenExist(value) {
+			const modifyValue = Array.isArray(value)
+				? JSON.stringify(value)
+				: JSON.stringify([value])
+			
+			return modifyValue === JSON.stringify(this.selected.map(curr => this.reduce(curr)))
 		}
 	},
 	watch: {
@@ -400,74 +341,135 @@ export default {
 			immediate: true,
 			deep: true,
 			handler(value) {
-				console.log('value', value)
-				console.log('reducedValue: ', this.reduceValue(value))
+				const arrayElementType = data => {
+					return data.reduce((acc, curr) => {
+						return Array.isArray(curr) ? 'array' : typeof curr
+					}, '')
+				}
 
-				console.log('filterList /s/o: ', this.filterList('selected', value), this.filterList('options', value))
-				this.selected = JSON.parse(JSON.stringify(this.filterList('selected', value)))
-				this.cloneOptions = this.filterList('options', value)
+				console.log(value)
+
+				// undefined, array, object, simples
+				
+				if (value !== undefined) {
+
+					if ((Array.isArray(value) ? 'array' : typeof value ) === arrayElementType(this.options)) {
+						
+						if (Array.isArray(value)) {
+							// Сравнение примитивных данных из массива
+							this.selected = this.options.filter(curr => value.includes(...curr))
+						} else if (typeof value === 'object') {
+
+							if (this.options.map(JSON.stringify).includes(JSON.stringify(value))) {
+								// Если объекты равны как строки
+								this.selected = this.options.filter(curr => JSON.stringify(curr) === JSON.stringify(value))
+							} else if ('label' in this.$options.propsData) {
+								// Если установлен лейбл ключа, сравнение значнеий по ключу
+								this.selected = this.options.filter(curr => value[this.label].includes(curr[this.label]))
+							} else {
+								// Дополнительный поиск по сравнению всех имеющихся ключей
+								this.selected = this.options.filter(curr => {
+									return Object.values(curr).some(curr => {
+										return Object.values(value).includes(curr)
+									})
+								})
+							}
+						} else {
+							// Сравнение примитивных данных
+							this.selected = this.options.filter(curr => curr === value)
+						}
+					} else {
+						if (Array.isArray(value)) {
+							// начало
+							console.log('here', arrayElementType(value))
+
+							if (arrayElementType(value) === 'array') {
+								// if (arrayElementType(this.options) === 'object') {
+
+								// } else {
+								// 	console.log('mm')
+								// }
+							} else if (arrayElementType(value) === 'object') {
+								if (arrayElementType(this.options) === 'array') {
+
+								} else if ((arrayElementType(this.options) === 'object')) {
+									console.log('here?')
+								} else {
+									if ('label' in this.$options.propsData) {
+										this.selected = this.options.filter(curr => {
+											console.log( value.map(c => c[this.label]), curr)
+											console.warn(`[select]: Возможно ваш лейбл "${this.label}" не включает в себя значение сопостовимое со элементами options`)
+											return value.map(c => c[this.label]).includes(curr)
+										})
+									} else {
+										this.selected = this.options.filter(curr => {
+											return value.some(c => {
+												return Object.values(c).includes(curr)
+											})
+										})
+									}
+								}
+							} else {
+								console.log('prim')
+							}
+
+							// конец
+						} else if (typeof value === 'object') {
+
+							if (arrayElementType(this.options) === 'array') {
+								if ('label' in this.$options.propsData) {
+									this.selected = this.options.filter(curr => {
+										return curr.includes(value[this.label])
+									})
+								} else {
+									this.selected = this.options.filter(curr => {
+										return Object.values(value).some(c => {
+											return curr.includes(c)
+										})
+									})
+								}
+							} else {
+								this.selected = this.options.filter(curr => {
+									return Object.values(value).includes(curr)
+								})
+							}
+
+						} else {
+							if (arrayElementType(this.options) === 'array') {
+								// Сравнение примитивных данных из массива
+								this.selected = this.options.filter(curr => curr.includes(value))
+							} else if (arrayElementType(this.options) === 'object') {
+								if ('label' in this.$options.propsData) {
+									// Если установлен лейбл ключа, сравнение значнеий по ключу
+									this.selected = this.options.filter(curr => value === curr[this.label])
+								} else {
+									// Дополнительный поиск по сравнению всех имеющихся ключей
+									this.selected = this.options.filter(curr => Object.values(curr).includes(value))
+								}
+							}
+
+						}
+					}
+					
+				}
+				
 			}
 		},
 		selected: {
+			// immediate: true,
 			deep: true,
 			handler(selected) {
-				console.log('selected', selected, this.selected.map(curr => this.reduce(curr)))
-				this.isOpenSelect = false
-				// this.cloneOptions = this.filterList('options', selected)
-				// this.$emit('input', selected)
+				
 			}
 		},
-
-
-		// + - work allwave
 		// value: {
 		// 	immediate: true,
 		// 	deep: true,
 		// 	handler(value) {
-		// 		if (!this.load) {
-		// 			this.load = true
-		// 			// this.sourceSelected = value
+		// 		// console.log('value: ', value, 'reduce' in this.$options.propsData)
+		// 		if (!this.isChosenExist(value)) {
+		// 			this.selected = JSON.parse(JSON.stringify(this.filterList('selected', 'filter', value)))
 		// 		}
-		// 		// Начинать от сюда
-				
-		// 		// if (this.isTransferredReducer) {
-
-		// 			const reducedValue = Array.isArray(value)
-		// 				? value.length
-		// 					? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
-		// 					: []
-		// 				: typeof value === 'object'
-		// 					? this.reduce(value)
-		// 					: value
-					
-					
-		// 			if (JSON.stringify(reducedValue) !== JSON.stringify(this.selected)) {
-		// 				if (this.multiple) {
-		// 					if (Array.isArray(reducedValue)) {
-		// 						this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
-		// 							? []
-		// 							: JSON.parse(JSON.stringify(reducedValue))
-		// 					} else {
-		// 						this.selected = []
-		// 						this.isStopReactiveChanges = true
-		// 						console.warn('[izi-select]: При множественном выборе (multiple:true), value ожидает массив значений по умолчанию!')
-		// 					}
-		// 				} else {
-		// 					if (!Array.isArray(reducedValue)) {
-		// 						this.selected = !this.options.some(curr => JSON.stringify(reducedValue).includes(JSON.stringify(this.reduce(curr))))
-		// 							? []
-		// 							: reducedValue
-		// 					} else {
-		// 						this.selected = []
-		// 						this.isStopReactiveChanges = true
-		// 						console.warn('[izi-select]: При единственном выборе (multiple:false), value ожидает примитивный тип данных!')
-		// 					}
-		// 				}
-		// 			}
-
-		// 		// }
-
-		// 		this.updateOptions(this.selected)
 		// 	}
 		// },
 		// selected: {
@@ -475,149 +477,17 @@ export default {
 		// 	immediate: true,
 		// 	handler(selected) {
 		// 		this.isOpenSelect = false
-
-		// 		if (this.isStopReactiveChanges) {
-		// 			this.isStopReactiveChanges = false
-		// 		} else {
-		// 			console.log('Before:selected', selected)
-		// 			this.$emit('input', selected)
-		// 		}
-		// 	}
-		// },
-
-		// work with only full data
-		
-		// value: {
-		// 	immediate: true,
-		// 	deep: true,
-		// 	handler(value) {
-		// 		if (JSON.stringify(value) !== JSON.stringify(this.selected)) {
-		// 			if (this.multiple) {
-		// 				if (Array.isArray(value)) {
-		// 					this.selected = !this.options.some(curr => JSON.stringify(value).includes(JSON.stringify(curr)))
-		// 						? []
-		// 						: JSON.parse(JSON.stringify(value))
-		// 				} else {
-		// 					this.selected = []
-		// 					this.isStopReactiveChanges = true
-		// 					console.warn('[izi-select]: При множественном выборе (multiple:true), value ожидает массив здначений по умолчанию!')
-		// 				}
-		// 			} else {
-		// 				if (!Array.isArray(value)) {
-		// 					this.selected = !this.options.some(curr => JSON.stringify(value) === JSON.stringify(curr))
-		// 						? null
-		// 						: value
-		// 				} else {
-		// 					this.selected = null
-		// 					this.isStopReactiveChanges = true
-		// 					console.warn('[izi-select]: При единственном выборе (multiple:false), value ожидает примитивный тип данных!')
-		// 				}
-		// 			}
-		// 		}
+		// 		this.cloneOptions = this.filterList('options', 'filter', selected)
 				
-		// 		this.updateOptions(this.selected)
+		// 		this.$emit(
+		// 			'input',
+		// 			this.multiple
+		// 				? this.selected.map(curr => this.reduce(curr))
+		// 				: this.selected.map(curr => this.reduce(curr))[0]
+		// 		)
 		// 	}
-		// },
-		// selected: {
-		// 	immediate: true, // под вопросом
-		// 	deep: true,
-		// 	handler(selected) {
-		// 		console.log('TOTAL SELECTED: ', selected)
-		// 		this.isOpenSelect = false
-
-		// 		if (this.isStopReactiveChanges) {
-		// 			this.isStopReactiveChanges = false
-		// 		} else {
-		// 			// const tmp = selected.map(curr => {
-		// 			// 	return this.reduce(curr)
-		// 			// })
-		// 			// console.log('tmp: ', this.outerReduce(selected))
-		// 			this.$emit('input', selected)
-		// 		}
-		// 	}
-		// },
-
-		// value: {
-		// 	immediate: true,
-		// 	deep: true,
-		// 	handler(value) {
-		// 		if (JSON.stringify(value) !== JSON.stringify(this.selected)) {
-		// 			if (this.multiple) {
-		// 				if (value && Array.isArray(value)) {
-		// 					this.selected = [...value]
-		// 					this.updateOptions(this.selected)
-		// 					console.log(this.selected, this.cloneOptions, this.options)
-		// 				} else {
-		// 					console.warn('При множественном выборе (multiple:true), необходимо передовать массив из выбранных по умолчанию элементов!')
-		// 				}
-		// 			}
-		// 		}
-
-		// 		// if (!this.multiple) {
-		// 		// 	if (value && !Array.isArray(value)) {
-		// 		// 		this.selected.push(value)
-		// 		// 		this.cloneOptions = this.options.filter(curr => !this.selected.includes(curr))
-		// 		// 	}
-		// 		// }
-		// 	}
-		// },
-		// selected: {
-		// 	deep: true,
-		// 	handler(selected) {
-		// 		this.isOpenSelect = false
-		// 		this.$emit('input', selected)
-		// 		this.updateOptions(selected)
-				
-		// 	}
-		// },
-		// value: {
-		// 	immediate: true,
-		// 	handler(value) {
-		// 		if (value.length) {
-		// 			if (!this.isLoadWithChangedValue) {
-		// 				if(this.multiple) {
-		// 					this.selected = value
-		// 					this.cloneOptions = this.options.filter(opt => {
-		// 						return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
-		// 					})
-		// 				} else {
-		// 					if (value.length > 1) {
-		// 						const unique = Array.from(new Set([...value, ...this.options].map(JSON.stringify))).map(JSON.parse)
-		// 						this.selected = value.slice(0, 1)
-		// 						this.cloneOptions = unique.filter(uq => {
-		// 							return value.slice(1).map(val => JSON.stringify(val)).includes(JSON.stringify(uq))
-		// 						})
-		// 						console.warn(`[custom_select]: "v-model/value" должен принимать массив из одного элемента, т.к. свойство multiple="false". В данном случае selected будет равен [0-му элементу] все остальное уйдет в options`)
-		// 					} else {
-		// 						this.selected = value
-		// 						this.cloneOptions = [...value, ...this.options].filter(el => {
-		// 							return !(value.map(val => JSON.stringify(val)).includes(JSON.stringify(el)))
-		// 						})
-		// 					}
-		// 				}
-
-		// 				this.isLoadWithChangedValue = true
-		// 			} 
-		// 		}
-		// 	}
-		// },
-		// options: {
-		// 	immediate: true,
-		// 	handler(options) {
-		// 		if (this.value) {
-		// 			this.cloneOptions = options.filter(opt => {
-		// 				return !(this.value.map(val => JSON.stringify(val)).includes(JSON.stringify(opt)))
-		// 			})
-		// 		} else {
-		// 			this.cloneOptions = JSON.parse(JSON.stringify(options))
-		// 		}
-		// 	}
-		// },
-		// selected() {
-		// 	this.isOpenSelect = false
 		// },
 		isOpenSelect(opened) {
-			this.isStopReactiveChanges = false
 			this.setCurrSelectCoords()
 
 			if (this.behavior && opened) {
@@ -650,11 +520,10 @@ export default {
 				const primaryElOverfow = getComputedStyle(primaryEl).overflow
 
 				if (primaryEl.tagName === 'BODY') start = false
-				if (primaryElOverfow === 'scroll' || primaryElOverfow === 'auto') {
+				if (['auto', 'scroll', 'hidden scroll'].includes(primaryElOverfow)) {
 					primaryEl.addEventListener('scroll', () => {
 						if (this.isOpenSelect && this.behavior) {
 							this.setCurrSelectCoords()
-							// this.isOpenSelect = false
 						}
 					})
 	
@@ -680,7 +549,7 @@ export default {
 </script>
 
 <style lang="scss">
-	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
+	// @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500&display=swap');
 
 	.select-container * {
 		margin: 0;
