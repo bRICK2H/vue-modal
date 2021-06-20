@@ -354,10 +354,19 @@ export default {
 				if (value !== undefined) {
 
 					if ((Array.isArray(value) ? 'array' : typeof value ) === arrayElementType(this.options)) {
-						
+						console.log('===')
 						if (Array.isArray(value)) {
-							// Сравнение примитивных данных из массива
-							this.selected = this.options.filter(curr => value.includes(...curr))
+							console.log( arrayElementType(value))
+							if(arrayElementType(value) === 'object') {
+								this.selected = this.options.filter(curr => {
+									return value.map(Object.values).some(c => {
+										return c.includes(...curr)
+									})
+								})
+							} else {
+								// Сравнение примитивных данных из массива
+								this.selected = this.options.filter(curr => value.includes(...curr))
+							}
 						} else if (typeof value === 'object') {
 
 							if (this.options.map(JSON.stringify).includes(JSON.stringify(value))) {
@@ -384,23 +393,55 @@ export default {
 							console.log('here', arrayElementType(value))
 
 							if (arrayElementType(value) === 'array') {
+								console.log('ARRAY')
 								// if (arrayElementType(this.options) === 'object') {
 
 								// } else {
 								// 	console.log('mm')
 								// }
 							} else if (arrayElementType(value) === 'object') {
-								if (arrayElementType(this.options) === 'array') {
+								const isExistLable = value.some(curr => Object.keys(curr).includes(this.label))
 
+								if (arrayElementType(this.options) === 'array') {
+									console.log('heee')
 								} else if ((arrayElementType(this.options) === 'object')) {
-									console.log('here?')
+									if ('label' in this.$options.propsData) {
+										if (isExistLable) {
+											this.selected = this.options.filter(curr => {
+												return Object.values(curr).includes(value.find(c => c[this.label])[this.label])
+											})
+
+											if (!this.selected.length) {
+												console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива объектов options`)
+											}
+										} else {
+											console.warn(`[select]: Выбранный label="${this.label}" не существует в объекте ключей value!`)
+										}
+									} else {
+										this.selected = this.options.filter(curr => {
+											return Object.values(curr).some(c => {
+												const [ values ] = value.map(Object.values)
+												return values.includes(c)
+											})
+										})
+
+										if (!this.selected.length) {
+											console.warn(`[select]: Ни одно занчение из массива объектов value не совпадает со значениями массива объектов options`)
+										}
+									}
 								} else {
 									if ('label' in this.$options.propsData) {
-										this.selected = this.options.filter(curr => {
-											console.log( value.map(c => c[this.label]), curr)
-											console.warn(`[select]: Возможно ваш лейбл "${this.label}" не включает в себя значение сопостовимое со элементами options`)
-											return value.map(c => c[this.label]).includes(curr)
-										})
+										if (isExistLable) {
+											this.selected = this.options.filter(curr => {
+												return value.map(c => c[this.label]).includes(curr)
+											})
+
+											if (!this.selected.length) {
+												console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива options`)
+											}
+										} else {
+											console.warn(`[select]: Выбранный label="${this.label}" не существует в объекте ключей value!`)
+										}
 									} else {
 										this.selected = this.options.filter(curr => {
 											return value.some(c => {
