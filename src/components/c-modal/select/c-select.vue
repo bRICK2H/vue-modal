@@ -30,7 +30,7 @@
 			<template v-else>
 				<div class="select-name v-selected__select-name"
 					:class="{'select-name--multiple': multiple}"
-					v-for="(select, i) of selected"
+					v-for="(select, i) of getSelected"
 					:key="`sl${i}`"
 				>
 					<span class="select-box-name select-name__select-box-name"
@@ -190,6 +190,8 @@ export default {
 		uniquedd: `dropdown-list:${Math.random()}`,
 		currSelectCoords: {},
 		selected: [],
+		name: 'select',
+		active: true,
 	}),
 	computed: {
 		setStylesToDropDownList() {
@@ -210,17 +212,24 @@ export default {
 				width: this.width === 'auto' ? '100%' : `${+this.width}px`,
 				minWidth: `${+this.width}px`,
 			}
+		},
+		getSelected() {
+			return this.multiple
+				? this.selected
+				: Array.isArray(this.value) ? [this.value[this.value.length - 1]] : [this.value]
 		}
 	},
 	methods: {
 		select(option) {			
 			if (this.multiple) {
-				this.selected.push(this.filterList('selected', 'find', option))
+				this.selected.push(option)
 			} else {
 				this.selected.splice(0, 1, option)
 			}
 		},
 		drop(i) {
+			this.setActiveSelect()
+
 			if (this.multiple) {
 				this.selected.splice(i, 1)
 			} else {
@@ -290,7 +299,9 @@ export default {
 				return el
 			}
 		},
-		toggleSelect() { this.isOpenSelect = !this.isOpenSelect },
+		toggleSelect() { 
+			this.isOpenSelect = !this.isOpenSelect
+		 },
 		setCurrSelectCoords() {
 			const { top, left, width } = this.$refs['selected'].getBoundingClientRect()
 			const height = this.$refs['selected'].offsetHeight
@@ -302,190 +313,128 @@ export default {
 				this.$set(this.currSelectCoords, 'height', height)
 			})
 		},
-		reduceValue(value) {
-			return Array.isArray(value)
-				? value.map(curr => typeof curr === 'object' ? this.reduce(curr) : curr)
-				: typeof value === 'object' ? this.reduce(value) : value
-		},
-		filterList(rule, method, value) {
-			return this.options[method](curr => {
-				if (Array.isArray(this.reduceValue(value))) {
-					const fArray = this.reduceValue(value).map(JSON.stringify).includes(JSON.stringify(this.reduce(curr)))
-					return rule === 'selected' ? fArray : !fArray
-				} else if (typeof this.reduceValue(value) === 'object') {
-					const fObject = JSON.stringify(this.reduceValue(value)).includes(JSON.stringify(this.reduce(curr)))
-					return rule === 'selected' ? fObject : !fObject
-				} else {
-					if (Array.isArray(this.reduce(curr))) {
-						// обработать
-					} else if (typeof this.reduce(curr) === 'object') {
-						const fPrimitiveFromObject = Object.values(this.reduce(curr)).includes(value)
-						return rule === 'selected' ? fPrimitiveFromObject : !fPrimitiveFromObject
-					} else {
-						const fOther = this.reduceValue(value) === this.reduce(curr)
-						return rule === 'selected' ? fOther : !fOther
-					}
+		setActiveSelect() {
+			this.$parent.$children.forEach(curr => {
+				if (curr.name === 'select' && JSON.stringify(this.value) === JSON.stringify(curr.value)) {
+					curr.active = false
 				}
 			})
+
+			this.active = true
 		},
 		isChosenExist(value) {
-			const modifyValue = Array.isArray(value)
-				? JSON.stringify(value)
-				: JSON.stringify([value])
-			
-			return modifyValue === JSON.stringify(this.selected.map(curr => this.reduce(curr)))
-		}
-	},
-	watch: {
-		value: {
-			immediate: true,
-			deep: true,
-			handler(value) {
-				const arrayElementType = data => {
-					return data.reduce((acc, curr) => {
-						return Array.isArray(curr) ? 'array' : typeof curr
-					}, '')
-				}
-
-				console.log(value)
-
-				// undefined, array, object, simples
-				
+			return JSON.stringify(this.getCurrIndices(value)) === JSON.stringify(this.getCurrIndices(this.selected))
+		},
+		arrayElementType(data) {
+			return data.reduce((acc, curr) => {
+				return Array.isArray(curr) ? 'array' : typeof curr
+			}, '')
+		},
+		getCurrIndices(value) {
+			return this.options.reduce((acc, curr, i) => {
 				if (value !== undefined) {
-
-					if ((Array.isArray(value) ? 'array' : typeof value ) === arrayElementType(this.options)) {
-						console.log('===')
+					if ((Array.isArray(value) ? 'array' : typeof value ) === this.arrayElementType(this.options)) {
 						if (Array.isArray(value)) {
-							console.log( arrayElementType(value))
-							if(arrayElementType(value) === 'object') {
-								this.selected = this.options.filter(curr => {
-									return value.map(Object.values).some(c => {
-										return c.includes(...curr)
-									})
-								})
-							} else {
-								// Сравнение примитивных данных из массива
-								this.selected = this.options.filter(curr => value.includes(...curr))
-							}
+							console.warn('[select]: Компонент не предполагает обработку данныx вида массив массивов!')
 						} else if (typeof value === 'object') {
-
 							if (this.options.map(JSON.stringify).includes(JSON.stringify(value))) {
 								// Если объекты равны как строки
-								this.selected = this.options.filter(curr => JSON.stringify(curr) === JSON.stringify(value))
+								if (JSON.stringify(curr) === JSON.stringify(value)) acc.push(i)
 							} else if ('label' in this.$options.propsData) {
 								// Если установлен лейбл ключа, сравнение значнеий по ключу
-								this.selected = this.options.filter(curr => value[this.label].includes(curr[this.label]))
+								if (value[this.label].includes(curr[this.label])) acc.push(i)
 							} else {
 								// Дополнительный поиск по сравнению всех имеющихся ключей
-								this.selected = this.options.filter(curr => {
-									return Object.values(curr).some(curr => {
-										return Object.values(value).includes(curr)
-									})
-								})
+								if (Object.values(curr).some(curr => Object.values(value).includes(curr))) {
+									acc.push(i)
+								}
 							}
 						} else {
 							// Сравнение примитивных данных
-							this.selected = this.options.filter(curr => curr === value)
+							if (curr === value) acc.push(i)
 						}
 					} else {
 						if (Array.isArray(value)) {
-							// начало
-							console.log('here', arrayElementType(value))
-
-							if (arrayElementType(value) === 'array') {
-								console.log('ARRAY')
-								// if (arrayElementType(this.options) === 'object') {
-
-								// } else {
-								// 	console.log('mm')
-								// }
-							} else if (arrayElementType(value) === 'object') {
+							if (this.arrayElementType(value) === 'array') {
+								console.warn('[select]: Компонент не предполагает обработку данный вида массив массивов!')
+							} else if (this.arrayElementType(value) === 'object') {
 								const isExistLable = value.some(curr => Object.keys(curr).includes(this.label))
 
-								if (arrayElementType(this.options) === 'array') {
-									console.log('heee')
-								} else if ((arrayElementType(this.options) === 'object')) {
+								if (this.arrayElementType(this.options) === 'array') {
+								} else if ((this.arrayElementType(this.options) === 'object')) {
 									if ('label' in this.$options.propsData) {
 										if (isExistLable) {
-											this.selected = this.options.filter(curr => {
-												return Object.values(curr).includes(value.find(c => c[this.label])[this.label])
-											})
-
-											if (!this.selected.length) {
-												console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива объектов options`)
+											if (Object.values(curr).some(curr => value.map(c => c[this.label]).includes(curr))) {
+												acc.push(i)
 											}
+
+											// if (!this.selected.length) {
+											// 	console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива объектов options`)
+											// }
 										} else {
 											console.warn(`[select]: Выбранный label="${this.label}" не существует в объекте ключей value!`)
 										}
 									} else {
-										this.selected = this.options.filter(curr => {
-											return Object.values(curr).some(c => {
-												const [ values ] = value.map(Object.values)
-												return values.includes(c)
-											})
+										const cond = value.some(c => {
+											return Object.values(c).some(val => Object.values(curr).includes(val))
 										})
+					
+										if (cond) acc.push(i)
 
-										if (!this.selected.length) {
-											console.warn(`[select]: Ни одно занчение из массива объектов value не совпадает со значениями массива объектов options`)
-										}
+										// if (!this.selected.length) {
+										// 	console.warn(`[select]: Ни одно занчение из массива объектов value не совпадает со значениями массива объектов options`)
+										// }
 									}
 								} else {
 									if ('label' in this.$options.propsData) {
 										if (isExistLable) {
-											this.selected = this.options.filter(curr => {
-												return value.map(c => c[this.label]).includes(curr)
-											})
+											if (value.map(c => c[this.label]).includes(curr)) acc.push(i)
 
-											if (!this.selected.length) {
-												console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива options`)
-											}
+											// if (!this.selected.length) {
+											// 	console.warn(`[select]: Значение label="${this.label}" не совпадает со значением из массива options`)
+											// }
 										} else {
 											console.warn(`[select]: Выбранный label="${this.label}" не существует в объекте ключей value!`)
 										}
 									} else {
-										this.selected = this.options.filter(curr => {
-											return value.some(c => {
-												return Object.values(c).includes(curr)
-											})
+										const cond = value.some(c => {
+											return Object.values(c).includes(curr)
 										})
+
+										if (cond) acc.push(i)
 									}
 								}
 							} else {
-								console.log('prim')
+								if (value.includes(curr)) acc.push(i)
 							}
 
-							// конец
 						} else if (typeof value === 'object') {
 
-							if (arrayElementType(this.options) === 'array') {
+							if (this.arrayElementType(this.options) === 'array') {
 								if ('label' in this.$options.propsData) {
-									this.selected = this.options.filter(curr => {
-										return curr.includes(value[this.label])
-									})
+									if (curr.includes(value[this.label])) acc.push(i)
 								} else {
-									this.selected = this.options.filter(curr => {
-										return Object.values(value).some(c => {
-											return curr.includes(c)
-										})
+									const cond =  Object.values(value).some(c => {
+										return curr.includes(c)
 									})
+
+									if (cond) acc.push(i)
 								}
 							} else {
-								this.selected = this.options.filter(curr => {
-									return Object.values(value).includes(curr)
-								})
+								if (Object.values(value).includes(curr)) acc.push(i)
 							}
 
 						} else {
-							if (arrayElementType(this.options) === 'array') {
+							if (this.arrayElementType(this.options) === 'array') {
 								// Сравнение примитивных данных из массива
-								this.selected = this.options.filter(curr => curr.includes(value))
-							} else if (arrayElementType(this.options) === 'object') {
+								if (curr.includes(value)) acc.push(i)
+							} else if (this.arrayElementType(this.options) === 'object') {
 								if ('label' in this.$options.propsData) {
 									// Если установлен лейбл ключа, сравнение значнеий по ключу
-									this.selected = this.options.filter(curr => value === curr[this.label])
+									if (value === curr[this.label]) acc.push(i)
 								} else {
 									// Дополнительный поиск по сравнению всех имеющихся ключей
-									this.selected = this.options.filter(curr => Object.values(curr).includes(value))
+									if (Object.values(curr).includes(value)) acc.push(i)
 								}
 							}
 
@@ -493,42 +442,42 @@ export default {
 					}
 					
 				}
-				
+
+				return acc
+			}, [])
+		}
+	},
+	watch: {
+		value: {
+			immediate: true,
+			deep: true,
+			handler(value) {
+				if (!this.isChosenExist(value)) {
+					this.selected = this.options.filter((c, i) => this.getCurrIndices(value).includes(i))
+				}
 			}
 		},
 		selected: {
-			// immediate: true,
+			immediate: true,
 			deep: true,
 			handler(selected) {
-				
+				this.isOpenSelect = false
+				this.cloneOptions = this.options.filter((c, i) => !this.getCurrIndices(selected).includes(i))
+
+
+				if (this.active) {
+					const outerResult = 'reduce' in this.$options.propsData
+						? selected.map(curr => this.reduce(curr)) : selected
+
+					this.$emit(
+						'input',
+						this.multiple ? outerResult : outerResult[0]
+					)
+				}
 			}
 		},
-		// value: {
-		// 	immediate: true,
-		// 	deep: true,
-		// 	handler(value) {
-		// 		// console.log('value: ', value, 'reduce' in this.$options.propsData)
-		// 		if (!this.isChosenExist(value)) {
-		// 			this.selected = JSON.parse(JSON.stringify(this.filterList('selected', 'filter', value)))
-		// 		}
-		// 	}
-		// },
-		// selected: {
-		// 	deep: true,
-		// 	immediate: true,
-		// 	handler(selected) {
-		// 		this.isOpenSelect = false
-		// 		this.cloneOptions = this.filterList('options', 'filter', selected)
-				
-		// 		this.$emit(
-		// 			'input',
-		// 			this.multiple
-		// 				? this.selected.map(curr => this.reduce(curr))
-		// 				: this.selected.map(curr => this.reduce(curr))[0]
-		// 		)
-		// 	}
-		// },
 		isOpenSelect(opened) {
+			this.setActiveSelect()
 			this.setCurrSelectCoords()
 
 			if (this.behavior && opened) {

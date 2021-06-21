@@ -31,21 +31,21 @@
         
         <div style="display:flex;">
           <c-select 
-            width="200"
+            width="250"
             v-model="val"
             :options="options"
             :behavior="true"
             :multiple="false"
             s_label="name"
           />
-          <!-- <c-select 
+          <c-select 
             width="200"
             v-model="val"
             :options="options"
             :behavior="false"
-            :multiple="false"
+            :multiple="true"
             s_label="name"
-          /> -->
+          />
         </div>
 
         <div style="display:flex;">
@@ -155,22 +155,22 @@ import cSelect from './components/c-modal/select/main'
 
 export default {
   name: 'App',
-  components: {cSelect, CSelect},
   data: () => ({
     name: 'root',
-    val: [{ id: 1, name: 'Маникюр-хороший', price: 490 }],
+    // val: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
+    val: { id: 2, name: 'Педикюр', price: 300 },
     // val: 'Маникюр-хороший',
-    // val: [['Маникюр-хороший']],
+    // val: ['Маникюр-хороший'],
     // options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела'],
     // options: [490, 300, 99, 33]
-    // options: [
-    //   { id: 1, name: 'Маникюр-хороший', price: 490 },
-    //   { id: 2, name: 'Педикюр', price: 300 },
-    //   { id: 3, name: 'Мужская косметология', price: 99 },
-    //   { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
-    // ],
+    options: [
+      { id: 1, name: 'Маникюр-хороший', price: 490 },
+      { id: 2, name: 'Педикюр', price: 300 },
+      { id: 3, name: 'Мужская косметология', price: 99 },
+      { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
+    ],
     // val: ['Маникюр-хороший'],
-    options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
+    // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
   methods: {
     async beforeClose() {

@@ -13,14 +13,17 @@ import App from './App.vue'
 
 // Vue.use(loader, parent)
 
+import cSelect from './components/c-modal/select/main.js'
+console.log(cSelect)
 import cModal from './components/c-modal'
 Vue.config.productionTip = false
 
 import vSelect from 'vue-select'
-import 'vue-select/dist/vue-select.css';
+import 'vue-select/dist/vue-select.css'
 Vue.component('v-select', vSelect)
 
 Vue.use(cModal)
+Vue.use(cSelect)
 
 // pack
 import VModal from 'vue-js-modal'
