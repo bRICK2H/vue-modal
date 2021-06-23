@@ -36,16 +36,17 @@
             :options="options"
             :behavior="true"
             :multiple="true"
+            label="id"
             :classes="['select-sel', 'option-opt']"
           />
-          <!-- <c-select 
+          <c-select 
             width="200"
             v-model="val"
             :options="options"
             :behavior="false"
             :multiple="false"
             label="name"
-          /> -->
+          />
         </div>
 
         <div style="display:flex;">
@@ -158,17 +159,17 @@ export default {
   data: () => ({
     name: 'root',
     // val: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
-    // val: { id: 1, name: 'Маникюр-хороший' },
+    val: [{ id: 1, name: 'Маникюр-хороший' }],
     // val: 'Маникюр-хороший',
-    val: ['Маникюр-хороший'],
+    // val: ['Маникюр-хороший'],
     options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела'],
     // options: [490, 300, 99, 33]
-    // options: [
-    //   { id: 1, name: 'Маникюр-хороший', price: 490 },
-    //   { id: 2, name: 'Педикюр', price: 300 },
-    //   { id: 3, name: 'Мужская косметология', price: 99 },
-    //   { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
-    // ],
+    options: [
+      { id: 1, name: 'Маникюр-хороший', price: 490 },
+      { id: 2, name: 'Педикюр', price: 300 },
+      { id: 3, name: 'Мужская косметология', price: 99 },
+      { id: 4, name: 'Стикс-обертывания для тела', price: 33 },
+    ],
     // val: ['Маникюр-хороший'],
     // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
@@ -252,10 +253,10 @@ export default {
   box-shadow: 0 0 30px 1px #000;
   background: #fff;
 }
-.selec-sel {
+.select-sel {
   border: 2px solid red;
 }
-.optio-opt {
+.option-opt {
   border: 1px solid blue;
 }
 </style>

@@ -35,12 +35,12 @@
 							'select-box-name--multiple': multiple,
 							'select-box-name--mr': multiple && (!clearable && Object.keys(selected).length !== 1 || clearable)
 						}"
-						:title="innerReduce(select, label)"
+						:title="innerReduce(select)"
 					>
 						<slot name="select"
 							v-bind="select"
 						>
-							{{ innerReduce(select, label) }}
+							{{ innerReduce(select) }}
 						</slot>
 					</span>
 					<div>
@@ -91,11 +91,11 @@
 						:key="i"
 						@mouseenter="hoverOption(i + 1)"
 						@click="select(option)"
-						:title="innerReduce(option, label)">
+						:title="innerReduce(option)">
 
 						<div class="option__name">
 							<slot name="option" v-bind="option">
-								{{ innerReduce(option, label) }}
+								{{ innerReduce(option) }}
 							</slot>
 						</div>
 
@@ -344,31 +344,9 @@
 			outerReduce(arr) {
 				return arr.map(c => this.reduce(c) === undefined ? c : this.reduce(c))
 			},
-			innerReduce(el, label) {
-				if (Array.isArray(el)) {
-					return el.flat().join(', ')
-				} else if (typeof el === 'object') {
-					if (Array.isArray(label)) {
-						return label.map(l => el[l]).join(', ')
-					} else if (typeof label === 'function') {
-						if (label(el) === undefined) {
-							console.warn(`[izi-select]: ${label} Не верно введено имя свойства объекта.`)
-							return el
-						} else if (Array.isArray(label(el))) {
-							return label(el).join(', ')
-						} else if (typeof label(el) === 'object') {
-							return Object.values(label(el)).join(', ')
-						} else {
-							return label(el)
-						}
-					} else {
-						return label in el
-							? el[label]
-							: Object.values(el).join(', ')
-					}
-				} else {
-					return el
-				}
+			innerReduce(el) {
+				return !Array.isArray(el) && typeof el === 'object' && this.label in el
+					? el[this.label] : el
 			},
 			toggleSelect() {
 				this.isOpenSelect = !this.isOpenSelect
