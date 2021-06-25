@@ -30,13 +30,13 @@
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
         
         <div style="display:flex;margin: 20px 0">
-          <c-select 
+          <!-- <c-select 
             width="250"
             v-model="val"
             :options="options"
             :behavior="true"
             :multiple="false"
-            :reduce="o => o.name"
+            :reduce="o => o.id"
             label="name"
             :classes="['select-sel', 'option-opt']"
           />
@@ -45,21 +45,25 @@
             v-model="val"
             title="Подрубрика"
             placeholder="Подрубрика"
-            :reduce="o => o.name"
+            :reduce="o => o.id"
             label="name"
             :raisePlaceholder="true"
             :options="options"
             :clearable="true"
             :behavior="false"
             :multiple="true"
-          />
+          /> -->
         </div>
 
         <div style="display:flex;">
           <v-select style="width:200px"
+            :options="options" 
+            :reduce="el => el.id"
+            :label="'title'"
+            :clearable="false"
+            :multiple="false"
+            :no-drop="false"
             v-model="val"
-            :options="options"
-            :multiple="true"
           />
             <!-- label="id" -->
           <!-- <v-select style="width:200px"
@@ -163,7 +167,7 @@ export default {
   name: 'App',
   data: () => ({
     name: 'root',
-    val: [{ id: 2, name: 'Педикюр', price: 300 }],
+    val: 1234,
     // options: []
     // options: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
     // val: [{ id: 2, name: 'o-2', price: 300 }],
@@ -172,18 +176,18 @@ export default {
     options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела'],
     // options: [490, 300, 99, 33]
 
-    // options: [
-    //   { id: 1, name: 'o-1', price: 4 },
-    //   { id: 2, name: 'o-2', price: 300 },
-    //   { id: 3, name: 'o-3', price: 4 },
-    //   { id: 4, name: 'o-4', price: 33 },
-    //   { id: 5, name: 'o-5', price: 4 },
-    //   { id: 6, name: 'o-6', price: 4 },
-    //   { id: 7, name: 'o-7', price: 4 },
-    //   { id: 8, name: 'o-8', price: 4 },
-    //   { id: 9, name: 'o-9', price: 4 },
-    //   { id: 10, name: 'o-10', price: 4 },
-    // ],
+    options: [
+      { id: 1, title: 'o-1', price: 4 },
+      { id: 2, title: 'o-2', price: 300 },
+      { id: 3, title: 'o-3', price: 4 },
+      { id: 4, title: 'o-4', price: 33 },
+      { id: 5, title: 'o-5', price: 4 },
+      { id: 6, title: 'o-6', price: 4 },
+      { id: 7, title: 'o-7', price: 4 },
+      { id: 8, title: 'o-8', price: 4 },
+      { id: 1234, title: 'o-9', price: 4 },
+      { id: 10, title: 'o-10', price: 4 },
+    ],
     // val: ['Маникюр-хороший'],
     // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
