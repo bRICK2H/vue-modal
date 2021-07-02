@@ -14,7 +14,7 @@
     <izi-modal
       name="header1"
       width="600"
-      height="700"
+      height="900"
       headerTitle="header1header1header1header1header1header1header1"
       :draggable="true"
       :header="true"
@@ -23,21 +23,22 @@
     >
       <!-- <div slot="header">new headernew headernew headernew headernew header</div> -->
       <div slot="body-content">
-        <div>
+        <div style="position: absolute;top:0;left:30px">
           {{ val }}
         </div>
         <button @click="openDialog">open dialog</button>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!
         
         <div style="display:flex;margin: 20px 0">
-          <!-- <c-select 
-            width="250"
+          <c-select 
             v-model="val"
             :options="options"
+            placeholder="Подрубрика"
+            :raisePlaceholder="true"
             :behavior="true"
             :multiple="false"
-            :reduce="o => o.id"
-            label="name"
+            :searchable="true"
+            label="title"
             :classes="['select-sel', 'option-opt']"
           />
           <c-select 
@@ -45,34 +46,36 @@
             v-model="val"
             title="Подрубрика"
             placeholder="Подрубрика"
-            :reduce="o => o.id"
-            label="name"
+            label="title"
+            :searchable="true"
             :raisePlaceholder="true"
             :options="options"
             :clearable="true"
-            :behavior="false"
+            :behavior="true"
             :multiple="true"
-          /> -->
+          />
         </div>
 
         <div style="display:flex;">
-          <v-select style="width:200px"
+          <!-- <v-select style="width:200px"
+            placeholder="Добавить"
             :options="options" 
-            :reduce="el => el.id"
             :label="'title'"
             :clearable="false"
             :multiple="false"
             :no-drop="false"
             v-model="val"
-          />
-            <!-- label="id" -->
+          /> -->
+            <!-- :reduce="el => el.id" -->
           <!-- <v-select style="width:200px"
+            placeholder="Подрубрика"
             v-model="val"
             :options="options"
-            :multiple="false"
-            label="name"
-            :reduce="o => o.id"
+            :multiple="true"
+            :no-drop="false"
+            label="title"
           /> -->
+            <!-- :reduce="el => el.id" -->
         </div>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis dignissimos perspiciatis suscipit alias, optio aut est voluptatem, atque cumque hic nisi ipsa amet veritatis minus, unde culpa voluptates! Ducimus quas animi vitae minus, amet atque ut fuga incidunt culpa iusto deleniti tenetur officiis nemo eveniet officia. Quos nulla dolore distinctio natus corrupti esse officia, quae odit eius ut quibusdam vel reiciendis quas fugit explicabo voluptates possimus minima. Sunt eos, quisquam tenetur debitis, aspernatur voluptatum amet aliquam temporibus excepturi ex totam illo dolorum aliquid ab repudiandae hic in quia adipisci velit iure, reprehenderit voluptatem cumque. Ea ipsum modi vero tempora facilis!<br />
       </div>
@@ -160,22 +163,27 @@
 </template>
 
 <script>
-import CSelect from '../../vue-custom-select/src/plugin/c-select/src/c-select.vue'
-import cSelect from './components/c-modal/select/main'
+// import CSelect from '../../vue-custom-select/src/plugin/c-select/src/c-select.vue'
+// import cSelect from './components/c-modal/select/main'
 
 export default {
   name: 'App',
   data: () => ({
     name: 'root',
-    val: 1234,
+    val: 490,
+    // val: [],
+    // val: 4,
+    // val: ['Педикюр', 1, 'Стикс-обертывания для тела4'],
+    val: [{ id: 1, title: 'o-1' }, { id: 2, title: 'o-2', price: 300 }],
     // options: []
     // options: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
-    // val: [{ id: 2, name: 'o-2', price: 300 }],
+    // val: [],
+    // val: [{ id: 2, title: 'o-2', price: 300 }],
     // val: 'Маникюр-хороший',
     // val: ['Маникюр-хороший'],
-    options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела'],
-    // options: [490, 300, 99, 33]
-
+    options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела', 'Маникюр-средний', 'Маникюр-хороший1', 'Педикюр2', 'Мужская косметология3','Стикс-обертывания для тела4', 'Маникюр-средний5'],
+    // options: [490, 1, 2, 3],
+      // options: []
     options: [
       { id: 1, title: 'o-1', price: 4 },
       { id: 2, title: 'o-2', price: 300 },
@@ -185,9 +193,10 @@ export default {
       { id: 6, title: 'o-6', price: 4 },
       { id: 7, title: 'o-7', price: 4 },
       { id: 8, title: 'o-8', price: 4 },
-      { id: 1234, title: 'o-9', price: 4 },
+      { id: 490, title: 'o-9', price: 4 },
       { id: 10, title: 'o-10', price: 4 },
     ],
+    // opt: [],
     // val: ['Маникюр-хороший'],
     // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
