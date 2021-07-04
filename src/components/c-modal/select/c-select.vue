@@ -12,36 +12,37 @@
 				{ 'v-selected--active': isOpenSelect },
 				...getSelectClass
 			]"
-			ref="selected"
+			:ref="uniqueselected"
 			:tabindex="tabindex"
-			@blur="selectBlur($event)"
+			@blur="globalBlur($event, 'select')"
 			@keydown.enter="enterToFocus"
 			@keydown.up.down.prevent="arrowToFocus($event)"
-			@click="(!multiple) || (!selected.length && !cloneOptions.length)
+			@click="!multiple ? toggleSelect() : false"
+		>
+			<!-- @blur="selectBlur($event)" -->
+		<!-- @click="(!multiple) || (!selected.length && !cloneOptions.length)
 				? toggleSelect()
-				: false
-			">
+				: false" -->
 
 			<transition name="placeholder">
-				<span v-if="raisePlaceholder && selected.length || !selected.length && isOpenSelect && searchable"
+				<span v-if="raisePlaceholder && selected.length || searchable && isOpenSelect && !selected.length"
 					class="select-title v-selected__select-title"
+					:style="{ maxWidth: width === 'auto' ? `calc(100% - 10px)` : `${width - 20}px` }"
 				>
 					{{ placeholder }}
 				</span>
 			</transition>
-			
-			<p v-if="!selected.length"
-				class="select-placeholder v-selected__select-placeholder"
-				key="title"
-			>
-				<template v-if="searchable && isOpenSelect">
-					*
-				</template>
-				<template v-else>
-					* {{ placeholder }}
-				</template>
 
-			</p>
+			<template v-if="!selected.length">
+				<template v-if="searchable && isOpenSelect" />
+				<p v-else
+					class="select-placeholder v-selected__select-placeholder"
+					:class="{ 'select-placeholder--empty': !selected.length }"
+					key="title"
+				>
+					* {{ placeholder }}
+				</p>
+			</template>
 			<template v-else-if="multiple || !multiple && !searchable || !multiple && searchable && !isOpenSelect">
 				<div class="select-name v-selected__select-name"
 					:class="[
@@ -69,7 +70,8 @@
 					</span>
 					<div class="select-box-close select-name__select-box-close">
 						<i-close v-if="multiple && (!clearable && selected.length !== 1 || clearable)"
-							class="select-box-close__close" @click.native="drop(i)"
+							class="select-box-close__close"
+							@click.native="drop(i)"
 						/>
 					</div>
 				</div>
@@ -83,11 +85,12 @@
 					:class="[
 						{ 'multiple-add--hover': cloneOptions.length },
 					]"
-					@click.native="cloneOptions.length
+					@click.native="toggleSelect"
+				/>
+				<!-- @click.native="cloneOptions.length
 						? toggleSelect()
 						: false
-					"
-				/>
+					" -->
 			</template>
 
 			<!-- Single icons - delete/arrow -->
@@ -96,28 +99,33 @@
 					:class="{ 'v-selected__wrap-icons--has-item': selected.length && clearable }"
 				>
 					<template v-if="clearable">
-						<i-close v-if="selected.length" @click.native.stop="drop(0)" />
+						<i-close v-if="selected.length"
+							@click.native.stop="drop(0)"
+						/>
 						<i-hor-line v-if="selected.length" />
 					</template>
-					<i-arrow-down class="rotate-arraw-down" :class="{'rotate-arraw-down--active': isOpenSelect}" />
+					<i-arrow-down class="rotate-arraw-down"
+						:class="{ 'rotate-arraw-down--active': isOpenSelect }"
+					/>
 				</div>
 			</template>
 
 			<!-- Searchable -->
 			<input v-if="searchable && isOpenSelect"
 				type="text"
-				ref="searchable"
+				:ref="uniquesearch"
 				class="v-searchable"
 				:class="[
 					{ 'v-searchable--single-clearable': !multiple && clearable },
-					{ 'v-searchable--single-arrow': !multiple && !clearable },
+					{ 'v-searchable--default': !multiple && !selected.length }
 				]"
-				@blur="searchBlur($event)"
+				@blur="globalBlur($event, 'search')"
 				@focus="searchFocus($event)"
 				@click.stop=""
-				:placeholder="this.multiple ? '' : selected.map(val => innerReduce(val)).join(', ')"
+				:placeholder="multiple ? '' : selected.map(val => innerReduce(val)).join(', ')"
 				v-model="inputSearch"
 			>
+			<!-- @blur="searchBlur($event)" -->
 		</div>
 
 		<!-- Optiions -->
@@ -226,6 +234,8 @@
 		},
 		data: () => ({
 			uniqueddl: `dropdown-list:${Math.random()}`,
+			uniquesearch: `searchable:${Math.random()}`,
+			uniqueselected: `selected:${Math.random()}`,
 			name: 'select',
 			tabindex: 0,
 			inputSearch: '',
@@ -342,41 +352,92 @@
 			hoverOption(index) {
 				this.currOptionArrow = index
 			},
-			selectBlur(e) {
-				const { relatedTarget } = e
-
-				if (relatedTarget) {
-					if (relatedTarget.classList.contains('v-searchable')) return
-					if (relatedTarget.classList.contains('dropdown-list')) {
-						this.$refs['selected'].focus()
-						return
+			globalBlur(e, type) {
+				console.log('globalBlur', type)
+				this.$parent.$children.forEach(curr => {
+					if (curr.name === 'select' && curr !== this) {
+						console.log(curr.isOpenSelect, curr, this._uid)
+						curr.isOpenSelect = false
 					}
-				}	
+				})
+			},
+			// selectBlur(e) {
+			// 	const { relatedTarget, target } = e,
+			// 			isExistDDL = relatedTarget && relatedTarget.classList.contains('dropdown-list')
+			// 	// if (this.searchable || isExistDDL) return
+			// 	console.log('blur-select :', relatedTarget, target)
+
+			// 	this.$parent.$children.forEach(curr => {
+			// 		if (curr.name === 'select' && curr !== this) {
+			// 			curr.isOpenSelect = false
+			// 		}
+			// 	})
+
+			// 	// this.isOpenSelect = false
+			// },
+			// searchBlur(e) {
+			// 	const { relatedTarget, target } = e
+			// 	// 		isExistDDL = relatedTarget && relatedTarget.classList.contains('dropdown-list')
+
+			// 	// if (isExistDDL) return
+			// 	console.log('blur-search :',
+			// 		relatedTarget,
+			// 		target,
+			// 		this
+			// 	)
+
+			// 	this.$parent.$children.forEach(curr => {
+			// 		if (curr.name === 'select' && curr !== this) {
+			// 			curr.isOpenSelect = false
+			// 		}
+			// 	})
+
+			// 	// this.isOpenSelect = false
+			// },
+			// selectBlur(e) {
+			// 	const { relatedTarget } = e
+
+			// 	console.log('selectBlur')
+
+			// 	if (relatedTarget) {
+			// 		const isExistMadd = relatedTarget.classList.contains('multiple-add')
+			// 		console.log('select-blur: ', relatedTarget)
+			// 		if (relatedTarget.classList.contains('v-searchable')) return
+			// 		if (relatedTarget.classList.contains('dropdown-list') || isExistMadd) {
+			// 			// this.$refs[this.uniqueselected].focus()
+			// 			return
+			// 		}
+			// 	}	
 	
-				this.isOpenSelect = false
-			},
-			searchBlur(e) {
-				const { relatedTarget, target } = e
-				if (this.searchable) {
-					if (!this.saveable) {
-						this.inputSearch = ''
-					}
+			// 	this.isOpenSelect = false
+			// },
+			// searchBlur(e) {
+			// 	const { relatedTarget, target } = e
+			// 	if (this.searchable) {
+			// 		if (!this.saveable) {
+			// 			this.inputSearch = ''
+			// 		}
 					
-					this.$emit('search:blur', this.saveable ? this.inputSearch : target.placeholder)
-				}
+			// 		this.$emit('search:blur', this.saveable ? this.inputSearch : target.placeholder)
+			// 	}
 
-				if (relatedTarget) {
-					const isExistDdl = relatedTarget.classList.contains('dropdown-list'),
-							isExistMadd = relatedTarget.classList.contains('multiple-add')
+			// 	if (relatedTarget) {
+			// 		const isExistDdl = relatedTarget.classList.contains('dropdown-list'),
+			// 				isExistMadd = relatedTarget.classList.contains('multiple-add')
 
-					if (isExistDdl || (isExistMadd && this.multiple)) {
-						this.$refs['selected'].focus()
-						return
-					}
-				}
+			// 		console.log('search-blur: ', relatedTarget, isExistDdl)
+			// 		// if (isExistDdl || (isExistMadd)) {
+			// 		// 	// this.$refs[this.uniqueselected].focus()
+			// 		// 	return
+			// 		// }
+			// 		if (isExistDdl || isExistMadd) {
+			// 			// this.$refs[this.uniqueselected].focus()
+			// 			return
+			// 		}
+			// 	}
 
-				this.isOpenSelect = false
-			},
+			// 	this.isOpenSelect = false
+			// },
 			searchFocus(e) {
 				const { target } = e
 
@@ -397,8 +458,8 @@
 				this.isOpenSelect = !this.isOpenSelect
 			},
 			setCurrSelectCoords() {
-				const { top, left, width } = this.$refs['selected'].getBoundingClientRect()
-				const height = this.$refs['selected'].offsetHeight
+				const { top, left, width } = this.$refs[this.uniqueselected].getBoundingClientRect()
+				const height = this.$refs[this.uniqueselected].offsetHeight
 	
 				this.$nextTick(() => {
 					this.$set(this.currSelectCoords, 'top', top)
@@ -409,15 +470,10 @@
 			},
 			setActiveSelect() {
 				this.$parent.$children.forEach(curr => {
-					if (curr.name === 'select'
-						&& JSON.stringify(this.value) === JSON.stringify(curr.value)
-						&& this.multiple !== curr.multiple
-					) {
-						curr.active = false
+					if (curr.name === 'select' && JSON.stringify(this.value) === JSON.stringify(curr.value)) {
+						curr.active = this.multiple === curr.multiple
 					}
 				})
-
-				this.active = true
 			},
 			isChosenExist(value) {
 				return JSON.stringify(this.getCurrIndices(value)) === JSON.stringify(this.getCurrIndices(this.selected))
@@ -568,14 +624,27 @@
 					DropDownContainer.appendChild(this.$refs[this.uniqueddl])
 				}
 
+				// if (this.searchable) {
+				// 	this.$nextTick(() => {
+				// 		if (opened) {
+				// 			this.$refs[this.uniquesearch].focus()
+				// 		} else {
+				// 			this.$refs[this.uniqueselected].focus()
+				// 		}
+				// 	})
+				// }
+
 				if (this.searchable) {
 					this.$nextTick(() => {
 						if (opened) {
-							this.$refs['searchable'].focus()
+							this.$refs[this.uniquesearch].focus()
 						} else {
-							this.$refs['selected'].focus()
+							this.$refs[this.uniqueselected].focus()
 						}
 					})
+				} else {
+					console.warn('open?', this.$refs[this.uniqueselected])
+					this.$refs[this.uniqueselected].focus()
 				}
 			},
 			inputSearch(value) {
@@ -729,7 +798,7 @@
 
 			&--has-item {
 				width: 60px;
-				height: 100%;
+				height: 80%;
 				background: #fff;
 			}
 		}
@@ -793,28 +862,52 @@
 		}
 	}
 
+	// .select-title {
+	// 	height: 6px;
+	// 	display: flex;
+	// 	align-items: center;
+	// 	font-size: 14px;
+	// 	background-color: #fff;
+	// 	color: #b7b7cc;
+	// 	padding: 0 10px;
+	// 	position: absolute;
+	// 	top: -6px;
+	// 	left: 15px;
+	// }
+
 	.select-title {
-		height: 6px;
-		display: flex;
-		align-items: center;
+		// height: 16px;
+		display: block;
 		font-size: 14px;
 		background-color: #fff;
 		color: #b7b7cc;
 		padding: 0 10px;
 		position: absolute;
-		top: -6px;
+		top: -11px;
 		left: 15px;
+		// max-width: 40px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	
 	.select-placeholder {
 		padding: 0 2px 0 6px;
-		display: flex;
-		align-items: center;
 		color: #b7b7cc;
 		font-weight: 300;
+
+		&--empty {
+			width: calc(100% - 40px);
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
 	}
 
 	.v-searchable {
+		min-width: 30px;
+		max-width: calc(100% - 30px);
 		width: 40px;
 		height: 30px;
 		flex: 1 1 auto;
@@ -823,17 +916,18 @@
 		padding: 0 13.5px;
 		border: none;
 		outline: none;
+		border: 1px solid red;
 
 		&::placeholder {
 			font-size: 14px;
 			font-weight: normal;
 			color: #b7b7cc;
 		}
-		&--single-arrow {
-			max-width: calc(100% - 30px);
-		}
 		&--single-clearable {
 			max-width: calc(100% - 70px);
+		}
+		&--default {
+			max-width: calc(100% - 30px);
 		}
 	}
 
@@ -944,11 +1038,9 @@
 				opacity: 0;
 				transform: translateX(50px);
 			}
-
 			20% {
 				box-shadow: 0 3px 7px #fff;
 			}
-
 			100% {
 				opacity: 1;
 			}
@@ -962,7 +1054,6 @@
 			40% {
 				box-shadow: 0 3px 7px #fff;
 			}
-
 			100% {
 				opacity: 0;
 				transform: translateY(100px);
