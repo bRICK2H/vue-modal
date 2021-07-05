@@ -32,17 +32,19 @@
         <div style="display:flex;margin: 20px 0">
           <c-select 
             v-model="val"
-            width="150"
+            width="250"
             :options="options"
+            label="title"
             placeholder="single search"
             :raisePlaceholder="false"
             :behavior="true"
             :multiple="false"
             :searchable="true"
-            label="title"
+            :saveable="false"
             :classes="['select-sel', 'option-opt']"
+            @search:blur="blur"
           />
-          <c-select 
+          <!-- <c-select 
             v-model="val"
             width="150"
             :options="options"
@@ -79,7 +81,7 @@
             :searchable="true"
             label="title"
             :classes="['select-sel', 'option-opt']"
-          />
+          /> -->
           <c-select 
             width="150"
             v-model="val"
@@ -209,11 +211,11 @@ export default {
   name: 'App',
   data: () => ({
     name: 'root',
-    val: 490,
+    // val: 490,
     // val: [],
     // val: 4,
     // val: ['Педикюр', 1, 'Стикс-обертывания для тела4'],
-    // val: [{ id: 1, title: 'o-1' }, { id: 2, title: 'o-2', price: 300 }],
+    val: [{ id: 1, title: 'o-1' }, { id: 2, title: 'o-2', price: 300 }],
     // options: []
     // options: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
     // val: [],
@@ -240,6 +242,10 @@ export default {
     // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
   }),
   methods: {
+    blur(val) {
+      console.warn(val)
+      // this.val = val
+    },
     async beforeClose() {
       console.log('beforeClose')
       return await this.$iziDialog.open({

@@ -112,7 +112,11 @@
 					{ 'v-searchable--default': !multiple && !selected.length }
 				]"
 				:ref="uniquesearch"
-				:placeholder="multiple ? '' : selected.map(val => innerReduce(val)).join(', ')"
+				:placeholder="
+					multiple
+						? ''
+						: selected.map(val => innerReduce(val)).join(', ')
+				"
 				@blur="globalBlur($event, 'search')"
 				@focus="searchFocus($event)"
 				@click.stop=""
@@ -422,33 +426,33 @@
 				this.cloneOptions= this.modifyOptions.filter((c, i) => !indices.includes(i))
 			},
 			formatToReduce(data, numberToString = true) {
-				// return 'reduce' in this.$options.propsData
-				// 	&& this.arrayElementType(data) === 'object'
-				// 		? data.map(curr => this.reduce(curr))
-				// 		: data
+				return 'reduce' in this.$options.propsData
+					&& this.arrayElementType(data) === 'object'
+						? data.map(curr => this.reduce(curr))
+						: data
 
-				if (this.arrayElementType(data) === 'object') {
-					const result = data.map(curr => {
-						return Object.entries(curr).reduce((acc, val) => {
-							const [key, value] = val
-							acc[key] = typeof value === 'number' && numberToString
-								? String(value)
-								: value
+				// if (this.arrayElementType(data) === 'object') {
+				// 	const result = data.map(curr => {
+				// 		return Object.entries(curr).reduce((acc, val) => {
+				// 			const [key, value] = val
+				// 			acc[key] = typeof value === 'number' && numberToString
+				// 				? String(value)
+				// 				: value
 
-							return acc
-						}, {})
-					})
+				// 			return acc
+				// 		}, {})
+				// 	})
 
-					return 'reduce' in this.$options.propsData
-						? result.map(curr => this.reduce(curr))
-						: result
-				} else {
-					return data.map(curr => {
-						return  typeof curr === 'number' && numberToString
-							? String(curr)
-							: curr
-					})
-				}
+				// 	return 'reduce' in this.$options.propsData
+				// 		? result.map(curr => this.reduce(curr))
+				// 		: result
+				// } else {
+				// 	return data.map(curr => {
+				// 		return  typeof curr === 'number' && numberToString
+				// 			? String(curr)
+				// 			: curr
+				// 	})
+				// }
 			},
 			getCurrIndices(value) {
 				const _value = this.formatToReduce(value)
@@ -461,7 +465,9 @@
 							if (this.arrayElementType(_options) === 'object') {
 								if (this.arrayElementType(_value) === 'object') {
 									const sameKeys = _value.map(Object.keys).flat().filter(key => Object.keys(curr).includes(key))
-
+									const x = _value.map(Object.keys)
+										
+									console.log(sameKeys, x)
 									if (sameKeys.length) {
 										const _jsonValues = _value.map(val => {
 											return JSON.stringify(sameKeys.reduce((a, c) => (a[c] = val[c], a), {}))
