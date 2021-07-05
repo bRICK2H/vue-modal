@@ -19,10 +19,6 @@
 			@keydown.up.down.prevent="arrowToFocus($event)"
 			@click="!multiple ? toggleSelect() : false"
 		>
-			<!-- @blur="selectBlur($event)" -->
-		<!-- @click="(!multiple) || (!selected.length && !cloneOptions.length)
-				? toggleSelect()
-				: false" -->
 
 			<transition name="placeholder">
 				<span v-if="raisePlaceholder && selected.length || searchable && isOpenSelect && !selected.length"
@@ -71,7 +67,7 @@
 					<div class="select-box-close select-name__select-box-close">
 						<i-close v-if="multiple && (!clearable && selected.length !== 1 || clearable)"
 							class="select-box-close__close"
-							@click.native="drop(i)"
+							@click.native="drop(i, select)"
 						/>
 					</div>
 				</div>
@@ -81,16 +77,13 @@
 			<template v-if="multiple">
 				<i-add v-if="cloneOptions.length"
 					class="multiple-add"
-					:tabindex="tabindex"
+					:ref="uniqueadd"
 					:class="[
 						{ 'multiple-add--hover': cloneOptions.length },
 					]"
 					@click.native="toggleSelect"
+					:tabindex="!isOpenSelect ? null : tabindex"
 				/>
-				<!-- @click.native="cloneOptions.length
-						? toggleSelect()
-						: false
-					" -->
 			</template>
 
 			<!-- Single icons - delete/arrow -->
@@ -113,19 +106,18 @@
 			<!-- Searchable -->
 			<input v-if="searchable && isOpenSelect"
 				type="text"
-				:ref="uniquesearch"
 				class="v-searchable"
 				:class="[
 					{ 'v-searchable--single-clearable': !multiple && clearable },
 					{ 'v-searchable--default': !multiple && !selected.length }
 				]"
+				:ref="uniquesearch"
+				:placeholder="multiple ? '' : selected.map(val => innerReduce(val)).join(', ')"
 				@blur="globalBlur($event, 'search')"
 				@focus="searchFocus($event)"
 				@click.stop=""
-				:placeholder="multiple ? '' : selected.map(val => innerReduce(val)).join(', ')"
 				v-model="inputSearch"
 			>
-			<!-- @blur="searchBlur($event)" -->
 		</div>
 
 		<!-- Optiions -->
@@ -158,7 +150,6 @@
 								{{ innerReduce(option) }}
 							</slot>
 						</div>
-
 					</li>
 				</template>
 			</ul>
@@ -236,6 +227,7 @@
 			uniqueddl: `dropdown-list:${Math.random()}`,
 			uniquesearch: `searchable:${Math.random()}`,
 			uniqueselected: `selected:${Math.random()}`,
+			uniqueadd: `add:${Math.random()}`,
 			name: 'select',
 			tabindex: 0,
 			inputSearch: '',
@@ -303,14 +295,16 @@
 
 				this.isPermissionToUpdate = true
 			},
-			drop(i) {
+			drop(i, option) {
 				this.setActiveSelect()
 
+				this.$emit('option:before-delete', option)
 				this.multiple
 					? this.selected.splice(i, 1)
 					: this.selected = []
 
 				this.isPermissionToUpdate = true
+				this.$emit('option:deleted', option)
 			},
 			enterToFocus() {
 				this.toggleSelect()
@@ -353,96 +347,37 @@
 				this.currOptionArrow = index
 			},
 			globalBlur(e, type) {
-				console.log('globalBlur', type)
-				this.$parent.$children.forEach(curr => {
-					if (curr.name === 'select' && curr !== this) {
-						console.log(curr.isOpenSelect, curr, this._uid)
-						curr.isOpenSelect = false
+				const { relatedTarget, target } = e
+
+				if (relatedTarget && relatedTarget.classList.contains('dropdown-list')) return
+				if (type === 'select') {
+					if (!this.searchable) {
+						if (this.multiple && relatedTarget === this.$refs[this.uniqueadd].$el) return
+
+						this.isOpenSelect = false
 					}
-				})
-			},
-			// selectBlur(e) {
-			// 	const { relatedTarget, target } = e,
-			// 			isExistDDL = relatedTarget && relatedTarget.classList.contains('dropdown-list')
-			// 	// if (this.searchable || isExistDDL) return
-			// 	console.log('blur-select :', relatedTarget, target)
-
-			// 	this.$parent.$children.forEach(curr => {
-			// 		if (curr.name === 'select' && curr !== this) {
-			// 			curr.isOpenSelect = false
-			// 		}
-			// 	})
-
-			// 	// this.isOpenSelect = false
-			// },
-			// searchBlur(e) {
-			// 	const { relatedTarget, target } = e
-			// 	// 		isExistDDL = relatedTarget && relatedTarget.classList.contains('dropdown-list')
-
-			// 	// if (isExistDDL) return
-			// 	console.log('blur-search :',
-			// 		relatedTarget,
-			// 		target,
-			// 		this
-			// 	)
-
-			// 	this.$parent.$children.forEach(curr => {
-			// 		if (curr.name === 'select' && curr !== this) {
-			// 			curr.isOpenSelect = false
-			// 		}
-			// 	})
-
-			// 	// this.isOpenSelect = false
-			// },
-			// selectBlur(e) {
-			// 	const { relatedTarget } = e
-
-			// 	console.log('selectBlur')
-
-			// 	if (relatedTarget) {
-			// 		const isExistMadd = relatedTarget.classList.contains('multiple-add')
-			// 		console.log('select-blur: ', relatedTarget)
-			// 		if (relatedTarget.classList.contains('v-searchable')) return
-			// 		if (relatedTarget.classList.contains('dropdown-list') || isExistMadd) {
-			// 			// this.$refs[this.uniqueselected].focus()
-			// 			return
-			// 		}
-			// 	}	
-	
-			// 	this.isOpenSelect = false
-			// },
-			// searchBlur(e) {
-			// 	const { relatedTarget, target } = e
-			// 	if (this.searchable) {
-			// 		if (!this.saveable) {
-			// 			this.inputSearch = ''
-			// 		}
+				} else {
+					if (this.searchable) {
+						if (!this.saveable) {
+							this.inputSearch = ''
+						}
+						
+						this.$emit('search:blur', this.saveable ? this.inputSearch : target.placeholder)
+					}
 					
-			// 		this.$emit('search:blur', this.saveable ? this.inputSearch : target.placeholder)
-			// 	}
-
-			// 	if (relatedTarget) {
-			// 		const isExistDdl = relatedTarget.classList.contains('dropdown-list'),
-			// 				isExistMadd = relatedTarget.classList.contains('multiple-add')
-
-			// 		console.log('search-blur: ', relatedTarget, isExistDdl)
-			// 		// if (isExistDdl || (isExistMadd)) {
-			// 		// 	// this.$refs[this.uniqueselected].focus()
-			// 		// 	return
-			// 		// }
-			// 		if (isExistDdl || isExistMadd) {
-			// 			// this.$refs[this.uniqueselected].focus()
-			// 			return
-			// 		}
-			// 	}
-
-			// 	this.isOpenSelect = false
-			// },
+					if (this.multiple) {
+						if (relatedTarget === this.$refs[this.uniqueadd].$el) return
+					} else {
+						if (relatedTarget === this.$refs[this.uniqueselected]) return
+					}
+					
+					this.isOpenSelect = false
+				}
+			},
 			searchFocus(e) {
 				const { target } = e
 
 				if (this.searchable) {
-
 					if (this.saveable) {
 						this.inputSearch = target.placeholder
 					}
@@ -486,32 +421,34 @@
 				const indices = this.getCurrIndices(selected)
 				this.cloneOptions= this.modifyOptions.filter((c, i) => !indices.includes(i))
 			},
-			formatToReduce(data) {
-				return 'reduce' in this.$options.propsData
-					&& this.arrayElementType(data) === 'object'
-						? data.map(curr => this.reduce(curr))
-						: data
+			formatToReduce(data, numberToString = true) {
+				// return 'reduce' in this.$options.propsData
+				// 	&& this.arrayElementType(data) === 'object'
+				// 		? data.map(curr => this.reduce(curr))
+				// 		: data
 
-				// Реализовать сравнение число = (строка) === (строкачисло)
-				// Данные не должные менятся глобально, только для сравнения
-				// И разобраться с blur multiselect на закрытие
-				
-				// if (this.arrayElementType(data) === 'object') {
-				// 	const result = data.map(curr => {
-				// 		return Object.entries(curr).reduce((acc, val) => {
-				// 			const [key, value] = val
-				// 			acc[key] = typeof value === 'number' ? String(value) : value
+				if (this.arrayElementType(data) === 'object') {
+					const result = data.map(curr => {
+						return Object.entries(curr).reduce((acc, val) => {
+							const [key, value] = val
+							acc[key] = typeof value === 'number' && numberToString
+								? String(value)
+								: value
 
-				// 			return acc
-				// 		}, {})
-				// 	})
+							return acc
+						}, {})
+					})
 
-				// 	return 'reduce' in this.$options.propsData
-				// 		? result.map(curr => this.reduce(curr))
-				// 		: result
-				// } else {
-				// 	return data
-				// }
+					return 'reduce' in this.$options.propsData
+						? result.map(curr => this.reduce(curr))
+						: result
+				} else {
+					return data.map(curr => {
+						return  typeof curr === 'number' && numberToString
+							? String(curr)
+							: curr
+					})
+				}
 			},
 			getCurrIndices(value) {
 				const _value = this.formatToReduce(value)
@@ -570,7 +507,7 @@
 					}
 
 					if (this.active && this.isPermissionToUpdate) {
-						const outerResult = this.formatToReduce(selected)
+						const outerResult = this.formatToReduce(selected, false)
 
 						this.$emit(
 							'input',
@@ -624,27 +561,14 @@
 					DropDownContainer.appendChild(this.$refs[this.uniqueddl])
 				}
 
-				// if (this.searchable) {
-				// 	this.$nextTick(() => {
-				// 		if (opened) {
-				// 			this.$refs[this.uniquesearch].focus()
-				// 		} else {
-				// 			this.$refs[this.uniqueselected].focus()
-				// 		}
-				// 	})
-				// }
-
-				if (this.searchable) {
-					this.$nextTick(() => {
-						if (opened) {
+				if (opened) {
+					if (this.searchable) {
+						this.$nextTick(() => {
 							this.$refs[this.uniquesearch].focus()
-						} else {
-							this.$refs[this.uniqueselected].focus()
-						}
-					})
-				} else {
-					console.warn('open?', this.$refs[this.uniqueselected])
-					this.$refs[this.uniqueselected].focus()
+						})
+					} else {
+						this.$refs[this.uniqueselected].focus()
+					}
 				}
 			},
 			inputSearch(value) {
@@ -685,11 +609,7 @@
 							if (this.isOpenSelect && this.behavior) {
 								this.setCurrSelectCoords()
 
-								if (startScroll < e.target.scrollTop) {
-									// down
-									this.isOpenSelect = false
-								}
-
+								this.isOpenSelect = startScroll < e.target.scrollTop ? false : false
 								startScroll = e.target.scrollTop
 							}
 						})
@@ -862,21 +782,7 @@
 		}
 	}
 
-	// .select-title {
-	// 	height: 6px;
-	// 	display: flex;
-	// 	align-items: center;
-	// 	font-size: 14px;
-	// 	background-color: #fff;
-	// 	color: #b7b7cc;
-	// 	padding: 0 10px;
-	// 	position: absolute;
-	// 	top: -6px;
-	// 	left: 15px;
-	// }
-
 	.select-title {
-		// height: 16px;
 		display: block;
 		font-size: 14px;
 		background-color: #fff;
@@ -885,7 +791,6 @@
 		position: absolute;
 		top: -11px;
 		left: 15px;
-		// max-width: 40px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -916,7 +821,6 @@
 		padding: 0 13.5px;
 		border: none;
 		outline: none;
-		border: 1px solid red;
 
 		&::placeholder {
 			font-size: 14px;

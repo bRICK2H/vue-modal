@@ -212,7 +212,7 @@ export default {
     val: 490,
     // val: [],
     // val: 4,
-    val: ['Педикюр', 1, 'Стикс-обертывания для тела4'],
+    // val: ['Педикюр', 1, 'Стикс-обертывания для тела4'],
     // val: [{ id: 1, title: 'o-1' }, { id: 2, title: 'o-2', price: 300 }],
     // options: []
     // options: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
@@ -220,21 +220,21 @@ export default {
     // val: [{ id: 2, title: 'o-2', price: 300 }],
     // val: 'Маникюр-хороший',
     // val: ['Маникюр-хороший'],
-    options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела', 'Маникюр-средний', 'Маникюр-хороший1', 'Педикюр2', 'Мужская косметология3','Стикс-обертывания для тела4', 'Маникюр-средний5'],
+    // options: ['Маникюр-хороший', 'Педикюр', 'Мужская косметология','Стикс-обертывания для тела', 'Маникюр-средний', 'Маникюр-хороший1', 'Педикюр2', 'Мужская косметология3','Стикс-обертывания для тела4', 'Маникюр-средний5'],
     // options: [490, 1, 2, 3],
       // options: []
-    // options: [
-    //   { id: 1, title: 'o-1', price: 4 },
-    //   { id: 2, title: 'o-2', price: 300 },
-    //   { id: 3, title: 'o-3', price: 4 },
-    //   { id: 4, title: 'o-4', price: 33 },
-    //   { id: 5, title: 'o-5', price: 4 },
-    //   { id: 6, title: 'o-6', price: 4 },
-    //   { id: 7, title: 'o-7', price: 4 },
-    //   { id: 8, title: 'o-8', price: 4 },
-    //   { id: 490, title: 'o-9', price: 4 },
-    //   { id: 10, title: 'o-10', price: 4 },
-    // ],
+    options: [
+      { id: 1, title: 'o-1', price: 4 },
+      { id: 2, title: 'o-2', price: 300 },
+      { id: 3, title: 'o-3', price: 4 },
+      { id: 4, title: 'o-4', price: 33 },
+      { id: 5, title: 'o-5', price: 4 },
+      { id: 6, title: 'o-6', price: 4 },
+      { id: 7, title: 'o-7', price: 4 },
+      { id: 8, title: 'o-8', price: 4 },
+      { id: '490', title: 'o-9', price: 4 },
+      { id: 10, title: 'o-10', price: 4 },
+    ],
     // opt: [],
     // val: ['Маникюр-хороший'],
     // options: [['Маникюр-хороший'], ['Педикюр'], ['Мужская косметология'], ['Стикс-обертывания для тела']]
@@ -320,9 +320,9 @@ export default {
   background: #fff;
 }
 .select-sel {
-  border: 2px solid red;
+  // border: 2px solid red;
 }
 .option-opt {
-  border: 1px solid blue;
+  // border: 1px solid blue;
 }
 </style>
