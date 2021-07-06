@@ -178,7 +178,6 @@
 			iArrowDown
 		},
 		props: {
-			title: String,
 			placeholder: {
 				type: String,
 				default: 'Добавить'
@@ -355,7 +354,7 @@
 				this.currOptionArrow = index
 			},
 			globalBlur(e, type) {
-				const { relatedTarget, target } = e
+				const { relatedTarget } = e
 
 				if (relatedTarget && relatedTarget.classList.contains('dropdown-list')) return
 				if (type === 'select') {
@@ -368,9 +367,9 @@
 					if (this.searchable) {
 						if (!this.saveable) {
 							this.inputSearch = ''
+						} else {
+							this.$emit('search:blur', this.inputSearch)
 						}
-						
-						this.$emit('search:blur', this.saveable ? this.inputSearch : target.placeholder)
 					}
 					
 					if (this.multiple) {
@@ -430,11 +429,6 @@
 				this.cloneOptions= this.modifyOptions.filter((c, i) => !indices.includes(i))
 			},
 			formatToReduce(data, numberToString = true) {
-				// return 'reduce' in this.$options.propsData
-				// 	&& this.arrayElementType(data) === 'object'
-				// 		? data.map(curr => this.reduce(curr))
-				// 		: data
-
 				if (this.arrayElementType(data) === 'object') {
 					const result = data.map(curr => {
 						return Object.entries(curr).reduce((acc, val) => {

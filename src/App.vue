@@ -42,7 +42,9 @@
             :searchable="true"
             :saveable="true"
             :classes="['select-sel', 'option-opt']"
+            @search="search"
             @search:blur="blur"
+            @search:focus="focus"
             @option:before-create="bc"
             @option:created="c"
           />
@@ -90,7 +92,7 @@
             title="Подрубрика"
             placeholder="multiple no search"
             label="title"
-            :searchable="false"
+            :searchable="true"
             :raisePlaceholder="false"
             :options="options"
             :clearable="true"
@@ -287,6 +289,15 @@ export default {
     },
     closed(e) {
       console.log('closed', e)
+    },
+    search(val) {
+      console.log('search', val)
+    },
+    focus(val) {
+      console.log('focus: ', val)
+    },
+    blur(val) {
+      console.log('blur: ', val)
     },
     beforeOpen() {
       console.log('beforeOpen')
