@@ -40,9 +40,11 @@
             :behavior="true"
             :multiple="false"
             :searchable="true"
-            :saveable="false"
+            :saveable="true"
             :classes="['select-sel', 'option-opt']"
             @search:blur="blur"
+            @option:before-create="bc"
+            @option:created="c"
           />
           <!-- <c-select 
             v-model="val"
@@ -94,6 +96,10 @@
             :clearable="true"
             :behavior="true"
             :multiple="true"
+            @option:before-create="bc"
+            @option:created="c"
+            @options:opened="op"
+            @options:closed="cl"
           />
         </div>
 
@@ -211,11 +217,11 @@ export default {
   name: 'App',
   data: () => ({
     name: 'root',
-    // val: 490,
+    val: 490,
     // val: [],
     // val: 4,
     // val: ['Педикюр', 1, 'Стикс-обертывания для тела4'],
-    val: [{ id: 1, title: 'o-1' }, { id: 2, title: 'o-2', price: 300 }],
+    // val: [{ id: 1, title: 'o-1' }],
     // options: []
     // options: [{ id: 4, name: 'Стикс-обертывания для тела', price: 33 }, { id: 2, name: 'Педикюр', price: 300 }],
     // val: [],
@@ -235,6 +241,7 @@ export default {
       { id: 7, title: 'o-7', price: 4 },
       { id: 8, title: 'o-8', price: 4 },
       { id: '490', title: 'o-9', price: 4 },
+      { id: '491', title: 'o-11', price: 4 },
       { id: 10, title: 'o-10', price: 4 },
     ],
     // opt: [],
@@ -244,7 +251,8 @@ export default {
   methods: {
     blur(val) {
       console.warn(val)
-      // this.val = val
+      this.options.push({ title: val })
+      this.val = val
     },
     async beforeClose() {
       console.log('beforeClose')
@@ -261,6 +269,18 @@ export default {
               { title: 'ASDFASDFASDFSADFASF', result: 'ofc' },
           ] 
       })
+    },
+    bc(val) {
+      console.log('bc: ', val)
+    },
+    c(val) {
+      console.log('c: ', val)
+    },
+    cl(val) {
+      console.log('cl: ', val)
+    },
+    op(val) {
+      console.log('op: ', val)
     },
     opened(e) {
       console.log('opened', e)
@@ -297,7 +317,7 @@ export default {
 
       console.log('res: ', res)
     }
-  }
+  },
 }
 </script>
 
