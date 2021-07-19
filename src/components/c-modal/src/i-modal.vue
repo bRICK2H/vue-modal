@@ -36,7 +36,7 @@
 							</span>		
 						</slot>
 
-						<span v-if="buttonClose"
+						<span v-show="buttonClose"
 							class="i-header-close i-modal-header__i-header-close"
 							@click="close"
 							@mousedown.stop=""
@@ -48,7 +48,7 @@
 						:class="{ 'i-modal-body--radius': header }"
 						:style="[setStyleBodyHeight, { padding: `${padding}px` }]"
 					>
-						<span v-if="buttonClose && !header"
+						<span v-show="buttonClose && !header"
 							class="i-body-close i-modal-body__i-body-close"
 							@click="close"
 						>
