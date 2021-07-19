@@ -46,7 +46,7 @@
 					</div>
 					<div class="i-modal-body i-modal-content__i-modal-body"
 						:class="{ 'i-modal-body--radius': header }"
-						:style="[setStyleBodyHeight, { padding: `${padding}px` }]"
+						:style="setStyleBody"
 					>
 						<span v-show="buttonClose && !header"
 							class="i-body-close i-modal-body__i-body-close"
@@ -170,10 +170,13 @@
 				if (this.layer)
 					return { zIndex: `${this.zIndex + (this.index - 1)}` }
 			},
-			setStyleBodyHeight() {
-				return this.header
-					? { height: `calc(100% - ${this.headerHeight})` }
-					: { height: '100%' }
+			setStyleBody() {
+				return {
+					padding: String(this.padding).split(' ').map(p => `${p}px`).join(' '),
+					height: this.header
+						? { height: `calc(100% - ${this.headerHeight})` }
+						: { height: '100%' }
+				}
 			},
 			setClassActiveContainerModal() {
 				return { 'i-modal-container--active': this.isActive }
@@ -351,6 +354,7 @@
 			position: absolute;
 			top: 20px;
 			right: 20px;
+			z-index: 10;
 
 			&:hover {
 				filter: brightness(0);
