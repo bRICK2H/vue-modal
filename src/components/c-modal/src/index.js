@@ -51,7 +51,7 @@ export default {
 				}
 			}
 
-			async open(name) {
+			async open(name, f_cb = () => ({})) {
 				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
 				const BEFORE_OPEN = await this.stateModals[CURR_INDEX].beforeOpen()
 
@@ -63,6 +63,7 @@ export default {
 				this.stateModals[CURR_INDEX].$refs[name].focus()
 
 				this.active(name)
+				f_cb()
 			}
 
 			active(name) {
@@ -76,7 +77,7 @@ export default {
 				})
 			}
 
-			close(name) {
+			close(name, f_cb = () => ({})) {
 				const MODALS_HELL = []
 				const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
 				const MODAL_GENERATOR = function* (currModal) {
@@ -156,6 +157,7 @@ export default {
 
 							})).then(() => {
 								this.clearComments()
+								f_cb()
 							})
 
 						}, i * 100)

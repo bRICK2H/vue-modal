@@ -31,9 +31,7 @@
 					>
 
 						<slot name="header-content">
-							<span class="i-header-title i-modal-header__i-header-title"
-								:title="headerTitle"
-							>
+							<span class="i-header-title i-modal-header__i-header-title">
 								{{ headerTitle }}
 							</span>		
 						</slot>
@@ -115,11 +113,11 @@
 			},
 			minWidth: {
 				type: [Number, String],
-				default: 150
+				default: 400
 			},
 			minHeight: {
 				type: [Number, String],
-				default: 150
+				default: 200
 			},
 			padding: {
 				type: [Number, String],
@@ -333,9 +331,7 @@
 		}
 	}
 	.i-header-title {
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
+		word-break: break-all;
 	}
 	.i-header-close,
 	.i-body-close {
