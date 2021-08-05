@@ -21,7 +21,7 @@
 						<p class="i-dialog-title i-dialog-content__i-dialog-title">
 							{{ title }}
 						</p>
-						<p class="i-dialog-text i-dialog-content__i-dialog-text">
+						<p class="i-dialog-text i-dialog-content__i-dialog-text" v-html="text">
 							{{ text }}
 						</p>
 					</div>
