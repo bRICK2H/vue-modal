@@ -26,6 +26,7 @@
 							{{ title }}
 						</p>
 						<p class="i-dialog-text i-dialog-content__i-dialog-text"
+							ref="i-dialog-text"
 							v-html="text"
 							@scroll="scrollText($event)"
 						>
@@ -40,10 +41,10 @@
 								class="i-dialog-buttons"
 								ref="i-dialog-buttons"
 							>
-								<button v-for="({ title, result, color }, i) of buttons"
+								<button v-for="({ title, result, color, locked = true }, i) of buttons"
 									:key="i"
-									:disabled="disabled"
-									:class="[defaultStyleButtons(color), disabledStyleButtons, hoverStyleButtons(color)]"
+									:disabled="disabled && locked"
+									:class="[defaultStyleButtons(color), disabledStyleButtons(locked), hoverStyleButtons(color, locked)]"
 									class="i-dialog-btn i-dialog-buttons__i-dialog-btn"
 									@click="confirm(result, $event)"
 								>
@@ -93,9 +94,6 @@ export default {
 		dialogIcon() {
 			return this.type ? ICONS[this.type] : null
 		},
-		disabledStyleButtons() {
-			return this.disabled ? 'i-dialog-btn--disabled' : ''
-		},
 	},
 	methods: {
 		open() {
@@ -119,15 +117,18 @@ export default {
 		defaultStyleButtons(color) {
 			return color ? 'i-dialog-btn--black' : ''
 		},
-		hoverStyleButtons(color) {
+		hoverStyleButtons(color, locked) {
 			return color
-				? this.disabled
+				? this.disabled && locked
 					? ''
 					: 'i-dialog-btn--black-hover'
-				: this.disabled
+				: this.disabled && locked
 					? ''
 					: 'i-dialog-btn--white-hover'
-		}
+		},
+		disabledStyleButtons(locked) {
+			return this.disabled && locked ? 'i-dialog-btn--disabled' : ''
+		},
 	},
 	watch: {
 		isOpen() {
@@ -139,8 +140,11 @@ export default {
 				}
 			})
 		},
-		scrollToActive(val) {
-			this.disabled = val
+		async scrollToActive(val) {
+			await this.$nextTick()
+			const el_text = this.$refs['i-dialog-text']
+
+			this.disabled = val && el_text.scrollHeight > el_text.offsetHeight
 		}
 	},
 }
@@ -258,7 +262,7 @@ export default {
 		}
 		&--disabled {
 			cursor: no-drop;
-			opacity: .5;
+			opacity: .1;
 		}
 	}
 	.i-dialog-enter-active {

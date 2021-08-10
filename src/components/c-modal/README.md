@@ -1,5 +1,9 @@
 # izi-modal-component
 
+### Install
+```
+npm i inowave-izi-modal-component@git+https://repo.izibook.ru/scm/wvm/izi-modal-component.git
+```
 ### main.js
 ```js
 import iziModal from 'inowave-izi-modal-component'
@@ -62,12 +66,15 @@ Vue.use(iziModal)
 | text 					| `String` 						| **''** 			| Описание |
 | type 					| `String` 						| **info** 			| Тип иконки, в коллекции есть ['info', 'warning'] |
 | layerClickToClose	| `Boolean` 					| **false** 		| Показывать внешний слой (background) модалки |
-| scrollToActive		| `Boolean` 					| **false** 		| Включить режим договора (кнопки заблокированы до момента, пока весь контент не будет проскролен) |
+| scrollToActive		| `Boolean` 					| **false** 		| Включить режим договора (кнопки заблокированы до момента (* если есть скролл), пока весь контент не будет проскролен) |
 | buttons 				| `Array` 						| **[{ title: 'Да', result: true, color: true },{ title: 'Нет', result: false }]** 		| Вывод кнопок в диалоге, result - ответ пользователя, color - выделение кнопки |
 
 #### Example
 ```javascript
-	// Открыть диалоговое окно и получить результат
+	/**
+	 * Открыть диалоговое окно и получить результат
+	 * * Обратить внимание на параметр locked, по умолчанию в компоненте он установлен как true (блокировать кнопку если scrollToActive = true), но для конкретной кнопки можно отключить этот режим установив locked: false
+	*/
 
 	async beforeCloseModal() {
 		// Вы этом случае получаешь дефолтный шаблон диалога
@@ -79,9 +86,10 @@ Vue.use(iziModal)
 			text: 'Какое-то описание, если требуется',
 			type: 'warning',
 			layerClickToClose: false,
+			scrollToActive: true,
 			buttons: [
 				{ title: 'Да', result: true },
-				{ title: 'Нет', result: false, color: true },
+				{ title: 'Нет', result: false, color: true , locked: false },
 				{ title: 'Может быть', result: 'maybe' }
 			] 
 		})
