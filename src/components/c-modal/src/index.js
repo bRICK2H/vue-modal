@@ -13,7 +13,7 @@ export default {
 
 		class Dialog {
 			constructor() {
-				this.properties = ['width', 'clickClose', 'title', 'text', 'type', 'buttons']
+				this.properties = ['width', 'scrollToActive', 'clickClose', 'title', 'text', 'type', 'buttons']
 				this.dialog = new Vue(IDialog).$mount('ref-dialog')
 			}
 			open(options = {}) {

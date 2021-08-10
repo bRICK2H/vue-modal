@@ -12,34 +12,45 @@
 			>
 				<div class="i-dialog-header">
 					<!-- Icons -->
-					<div class="i-dialog-icon i-dialog-container__i-dialog-icon">
+					<div v-if="type !== null"
+						class="i-dialog-icon i-dialog-container__i-dialog-icon"
+					>
 						<img :src="dialogIcon" alt="icon">
 					</div>
 
 					<!-- Content -->
 					<div class="i-dialog-content i-dialog-container__i-dialog-content">
-						<p class="i-dialog-title i-dialog-content__i-dialog-title">
+						<p v-show="title !== null"
+							class="i-dialog-title i-dialog-content__i-dialog-title"
+						>
 							{{ title }}
 						</p>
-						<p class="i-dialog-text i-dialog-content__i-dialog-text" v-html="text">
+						<p class="i-dialog-text i-dialog-content__i-dialog-text"
+							v-html="text"
+							@scroll="scrollText($event)"
+						>
 							{{ text }}
 						</p>
 					</div>
 				</div>
 
 				<!-- Buttons -->
-				<div class="i-dialog-buttons"
-					ref="i-dialog-buttons"
-				>
-					<button v-for="({ title, result, color }, i) of buttons"
-						:key="i"
-						class="i-dialog-btn i-dialog-buttons__i-dialog-btn"
-						:class="color ? 'i-dialog-btn--black' : ''"
-						@click="confirm(result, $event)"
-					>
-						{{ title }}
-					</button>
-				</div>
+					<div class="i-dialog-buttons-container">
+							<div
+								class="i-dialog-buttons"
+								ref="i-dialog-buttons"
+							>
+								<button v-for="({ title, result, color }, i) of buttons"
+									:key="i"
+									:disabled="disabled"
+									:class="[defaultStyleButtons(color), disabledStyleButtons, hoverStyleButtons(color)]"
+									class="i-dialog-btn i-dialog-buttons__i-dialog-btn"
+									@click="confirm(result, $event)"
+								>
+									{{ title }}
+								</button>
+							</div>
+					</div>
 			</div>
 		</div>
 	</transition>
@@ -59,6 +70,7 @@ export default {
 		title: { default: 'Вы уверены?' },
 		text: { default: '' },
 		type: { default: 'info' },
+		scrollToActive: { default: false },
 		buttons: {
 			default: () => {
 				return [
@@ -70,14 +82,19 @@ export default {
 		handler: { default: () => false }
 	},
 	data: () => ({
-		isOpen: false
+		isOpen: false,
+		disabled: false,
+		isEntryToBottom: false
 	}),
 	computed: {
 		dialogWidth() {
 			return { width: this.buttons.length > 2 ? 'auto' : `${this.width}px` }
 		},
 		dialogIcon() {
-			return ICONS[this.type]
+			return this.type ? ICONS[this.type] : null
+		},
+		disabledStyleButtons() {
+			return this.disabled ? 'i-dialog-btn--disabled' : ''
 		},
 	},
 	methods: {
@@ -91,6 +108,25 @@ export default {
 		},
 		confirm(result) {
 			this.close(result)
+		},
+		scrollText(e) {
+			const { target } = e
+			if (!this.scrollToActive || this.isEntryToBottom) return
+
+			this.isEntryToBottom = target.scrollHeight - target.scrollTop <= (target.offsetHeight + 50)
+			this.disabled = !this.isEntryToBottom
+		},
+		defaultStyleButtons(color) {
+			return color ? 'i-dialog-btn--black' : ''
+		},
+		hoverStyleButtons(color) {
+			return color
+				? this.disabled
+					? ''
+					: 'i-dialog-btn--black-hover'
+				: this.disabled
+					? ''
+					: 'i-dialog-btn--white-hover'
 		}
 	},
 	watch: {
@@ -102,8 +138,11 @@ export default {
 					this.$refs['i-dialog-wrapper'].focus()
 				}
 			})
+		},
+		scrollToActive(val) {
+			this.disabled = val
 		}
-	}
+	},
 }
 </script>
 
@@ -130,6 +169,7 @@ export default {
 		padding: 24px;
 		display: flex;
 		flex-direction: column;
+		overflow: hidden;
 
 		&__i-dialog-icon {
 			margin-right: 24px;
@@ -157,8 +197,28 @@ export default {
 		line-height: 28px;
 	}
 	.i-dialog-text {
+		max-height: 50vh;
+    	overflow: auto;
 		font-size: 14px;
 		line-height: 20px;
+		padding: 0 10px;
+
+		&::-webkit-scrollbar {
+			width: 4px;
+		}
+		
+		&::-webkit-scrollbar-track {
+			border-radius: 20px;
+			background-color: #eee;
+		}
+		
+		&::-webkit-scrollbar-thumb {
+			border-radius: 20px;
+			background-color: #4bbac5;
+		}
+	}
+	.i-dialog-buttons-container {
+		min-height: 48px;
 	}
 	.i-dialog-buttons {
 		height: 48px;
@@ -179,24 +239,26 @@ export default {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: .1s;
+		transition: .2s;
+		cursor: pointer;
 
 		&:not(:last-of-type) {
 			margin-right: 10px;
-		}
-		&:hover {
-			cursor: pointer;
-			transform: scale(0.99);
-			background: rgba(0,0,0, .12)
 		}
 		&--black {
 			background: #000;
 			color: #fff;
 			border: 2px solid #000;
-
-			&:hover {
-				background: rgba(0,0,0, .8)
-			}
+		}
+		&--white-hover:hover {
+			background: rgba(0,0,0, .12)
+		}
+		&--black-hover:hover {
+			background: rgba(0,0,0, .8)
+		}
+		&--disabled {
+			cursor: no-drop;
+			opacity: .5;
 		}
 	}
 	.i-dialog-enter-active {
@@ -221,6 +283,19 @@ export default {
 		animation: .4s leave-container-dialog;
 		@keyframes leave-container-dialog {
 			100% { transform: translateY(-50vh) perspective(500px) rotateX(-90deg); }
+		}
+	}
+
+	.i-dialog-btn-enter-active {
+		animation: .2s i-dialog-btn-enter;
+		@keyframes i-dialog-btn-enter {
+			0% { transform: translateX(50%); }
+		}
+	}
+	.i-dialog-btn-leave-active {
+		animation: .2s i-dialog-btn-leave;
+		@keyframes i-dialog-btn-leave {
+			100% { transform: translateX(50%); }
 		}
 	}
 </style>
