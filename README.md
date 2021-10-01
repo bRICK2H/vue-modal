@@ -1,5 +1,15 @@
 # izi-modal-component
 
+### Install
+```
+npm i inowave-izi-modal-component@git+https://repo.izibook.ru/scm/wvm/izi-modal-component.git
+```
+### main.js
+```js
+import iziModal from 'inowave-izi-modal-component'
+Vue.use(iziModal)
+```
+
 ## Modal config:
 | Name 					| Type 							| Default 			| Description 	|
 | ---- 					| :--: 							| :-----: 			| ----------- 	|
@@ -49,18 +59,24 @@
 	this.$iziModal.close('services')
 ```
 ## Dialog config:
-| Name 					| Type 							| Default 			| Description 	|
-| ---- 					| :--: 							| :-----: 			| ----------- 	|
-| width 					| `[Number, String]` 		| **572** 			| Ширина   |
-| title 					| `String` 						| **Вы уверены?** | Заголовок  |
-| text 					| `String` 						| **''** 			| Описание |
+| Name 					| Type 							| Default 			| Description 													|
+| ---- 					| :--: 							| :-----: 			| ----------- 													|
+| width 					| `[Number, String]` 		| **572** 			| Ширина   														|
+| closeEsc 				| `Bolean` 						| **true** 			| Закрыть диалог с помощью Escape   					|
+| title 					| `String` 						| **Вы уверены?** | Заголовок  													|
+| text 					| `String` 						| **''** 			| Описание 														|
+| paddingTxt			| `[String, Number]` 		| **'0'** 			| Внутренние отступы для текста 							|
 | type 					| `String` 						| **info** 			| Тип иконки, в коллекции есть ['info', 'warning'] |
-| layerClickToClose	| `Boolean` 					| **false** 		| Показывать внешний слой (background) модалки |
+| layerClickToClose	| `Boolean` 					| **false** 		| Показывать внешний слой (background) модалки 		|
+| scrollToActive		| `Boolean` 					| **false** 		| Включить режим договора (кнопки заблокированы до момента (* если есть скролл), пока весь контент не будет проскролен) |
 | buttons 				| `Array` 						| **[{ title: 'Да', result: true, color: true },{ title: 'Нет', result: false }]** 		| Вывод кнопок в диалоге, result - ответ пользователя, color - выделение кнопки |
 
 #### Example
 ```javascript
-	// Открыть диалоговое окно и получить результат
+	/**
+	 * Открыть диалоговое окно и получить результат
+	 * * Обратить внимание на параметр locked, по умолчанию в компоненте он установлен как true (блокировать кнопку если scrollToActive = true), но для конкретной кнопки можно отключить этот режим установив locked: false
+	*/
 
 	async beforeCloseModal() {
 		// Вы этом случае получаешь дефолтный шаблон диалога
@@ -71,10 +87,12 @@
 			title: 'Вы уверены?',
 			text: 'Какое-то описание, если требуется',
 			type: 'warning',
+			paddingTxt: '0 10',
 			layerClickToClose: false,
+			scrollToActive: true,
 			buttons: [
 				{ title: 'Да', result: true },
-				{ title: 'Нет', result: false, color: true },
+				{ title: 'Нет', result: false, color: true , locked: false },
 				{ title: 'Может быть', result: 'maybe' }
 			] 
 		})
