@@ -1,7 +1,7 @@
 <template>
 	<transition name="i-dialog">
 		<div class="i-dialog-wrapper" v-if="isOpen"
-			ref="i-dialog-wrapper"
+			:ref="dialogRef"
 			tabindex="0"
 			@keyup.esc="close(false, $event)"
 			@click="layerClickToClose ? close(false, $event) : false"
@@ -40,6 +40,7 @@
 					<div class="i-dialog-buttons-container">
 							<div
 								class="i-dialog-buttons"
+								:style="{ '--btn-len': buttons.length }"
 								ref="i-dialog-buttons"
 							>
 								<button v-for="({ title, result, color, locked = true }, i) of buttons"
@@ -86,13 +87,17 @@ export default {
 		handler: { default: () => false }
 	},
 	data: () => ({
+		timeID: null,
+		dialogRef: '',
 		isOpen: false,
 		disabled: false,
-		isEntryToBottom: false
+		isEntryToBottom: false,
+		initWidth: 0,
+		totalWidth: 0
 	}),
 	computed: {
 		dialogWidth() {
-			return { width: this.buttons.length > 2 ? 'auto' : `${this.width}px` }
+			return { width: `${this.totalWidth}px` }
 		},
 		dialogIcon() {
 			return this.type ? ICONS[this.type] : null
@@ -138,16 +143,26 @@ export default {
 		disabledStyleButtons(locked) {
 			return this.disabled && locked ? 'i-dialog-btn--disabled' : ''
 		},
+		setAdaptiveDialog() {
+			const pageWidth = innerWidth
+
+			this.initWidth = this.width
+			this.totalWidth = pageWidth <= this.initWidth
+				? pageWidth
+				: this.initWidth
+		}
 	},
 	watch: {
 		isOpen() {
 			this.$nextTick(() => {
-				const wrapper = this.$refs['i-dialog-wrapper']
+				const wrapper = this.$refs[this.dialogRef]
 
 				if (wrapper) {
-					this.$refs['i-dialog-wrapper'].focus()
+					this.$refs[this.dialogRef].focus()
 				}
 			})
+
+			this.setAdaptiveDialog()
 		},
 		async scrollToActive(val) {
 			await this.$nextTick()
@@ -156,6 +171,16 @@ export default {
 			this.disabled = val && el_text.scrollHeight > el_text.offsetHeight
 		}
 	},
+	created() {
+		this.dialogRef = `dialog-ref:${String(Math.random()).slice(2, 10)}`
+		window.addEventListener('resize', () => {
+			if (this.isOpen) {
+				clearInterval(this.timeID)
+				this.timeID = setTimeout(() => this.setAdaptiveDialog())
+			}
+		})
+
+	}
 }
 </script>
 
@@ -179,13 +204,17 @@ export default {
 		background: #fff;
 		border-radius: 12px;
 		box-shadow: 0px 20px 70px rgba(32, 31, 54, .7);
-		padding: 24px;
+		padding: 24px 19px 19px 24px;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
 
 		&__i-dialog-icon {
 			margin-right: 24px;
+		}
+
+		@media screen and (max-width: 768px) {
+			& { border-radius: 0px; }
 		}
 	}
 	.i-dialog-header {
@@ -227,21 +256,25 @@ export default {
 		
 		&::-webkit-scrollbar-thumb {
 			border-radius: 20px;
-			background-color: #4bbac5;
+			background-color: #b2b2c5;
 		}
 	}
 	.i-dialog-buttons-container {
 		min-height: 48px;
 	}
 	.i-dialog-buttons {
-		height: 48px;
+		width: 90%;
+		margin: 0 0 0 auto;
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
+		flex-wrap: wrap;
 	}
 	.i-dialog-btn  {
 		height: 100%;
 		min-width: 156px;
+		flex: 1 1 calc((100% / var(--btn-len) - 20px));
 		padding: 13px 17.5px;
+		margin: 5px;
 		font-size: 16px;
 		font-weight: bold;
 		outline: none;
@@ -255,9 +288,6 @@ export default {
 		transition: .2s;
 		cursor: pointer;
 
-		&:not(:last-of-type) {
-			margin-right: 10px;
-		}
 		&--black {
 			background: #000;
 			color: #fff;

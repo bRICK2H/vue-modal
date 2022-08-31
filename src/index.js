@@ -2,7 +2,7 @@ import IModal from './i-modal.vue'
 import IDialog from './i-dialog.vue'
 
 export default {
-	install(Vue) {
+	install(Vue, options = { name: 'izi-modal' }) {
 		const MODAL_CONTAINER = document.createElement('izi-modal-container')
 		const DIALOG_CONTAINER = document.createElement('izi-dialog')
 		const ref_dialog = document.createElement('ref-dialog')
@@ -52,8 +52,14 @@ export default {
 				this.modalContainer = modalContainer
 			}
 
+			getIndexModal(name) {
+				return this.stateModals.findIndex(curr => curr.name === name)
+			}
+
 			created(instance, name) {
-				const EXIST_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+				if (!name) return
+				
+				const EXIST_INDEX = this.getIndexModal(name)
 
 				if (EXIST_INDEX === -1) {
 					this.stateModals.push(instance)
@@ -62,23 +68,40 @@ export default {
 				}
 			}
 
-			async open(name, f_cb = () => ({})) {
-				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
-				const BEFORE_OPEN = await this.stateModals[CURR_INDEX].beforeOpen()
+			async open(name = '', callback = () => ({})) {
+				const CURR_INDEX = this.getIndexModal(name)
 
-				if (BEFORE_OPEN === false) return;
-				this.stateModals[CURR_INDEX]['isShow'] = true
+				if (CURR_INDEX !== -1) {
+					const BEFORE_OPEN = await this.stateModals[CURR_INDEX].beforeOpen()
+	
+					if (BEFORE_OPEN === false) return;
+					this.stateModals[CURR_INDEX]['isShow'] = true
+	
+					await this.vm.$nextTick()
+					MODAL_CONTAINER.appendChild(this.stateModals[CURR_INDEX].$refs[name])
+					this.stateModals[CURR_INDEX].$refs[name].focus()
+	
+					this.active(name)
+					callback()
+				} else {
 
-				await this.vm.$nextTick()
-				MODAL_CONTAINER.appendChild(this.stateModals[CURR_INDEX].$refs[name])
-				this.stateModals[CURR_INDEX].$refs[name].focus()
+					if (!name) {
+						console.warn(`[vmodal]: Необходимо добавить name в props компонента модального окна!`)
+					} else {
+						Promise.resolve().then(() => {
+							const CURR_INDEX = this.getIndexModal(name)
 
-				this.active(name)
-				f_cb()
+							if (CURR_INDEX) {
+								this.open(name, callback = () => ({}))
+							}
+						})
+					}
+					
+				}
 			}
 
 			active(name) {
-				const CURR_INDEX = this.stateModals.findIndex(curr => curr.name === name)
+				const CURR_INDEX = this.getIndexModal(name)
 
 				this.stateModals.push(...this.stateModals.splice(CURR_INDEX, 1))
 				this.stateModals = this.stateModals.map((curr, index) => {
@@ -88,9 +111,24 @@ export default {
 				})
 			}
 
-			close(name, f_cb = () => ({})) {
+			close(name = '', handler = false, callback) {
+				const dialog = handler
+					? typeof handler === 'object'
+						?	handler.dialog
+						:	handler
+					:	false
+
+				if (dialog) {
+					const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
+					CURR_MODAL.close(CURR_MODAL.$el, callback)
+				} else {
+					this.totalClose(name, callback)
+				}
+			}
+
+			totalClose(name, callback = () => ({})) {
 				const MODALS_HELL = []
-				const CURR_MODAL = this.stateModals.find(curr => curr.name === name)
+				const CURR_MODAL = this.stateModals.find(curr => curr && curr.name === name)
 				const MODAL_GENERATOR = function* (currModal) {
 					if (currModal) {
 						const MODAL_RESULT = currModal.$children.reduce((acc, modal) => {
@@ -124,7 +162,7 @@ export default {
 							}
 
 							return acc
-						}, { nextModal: null })
+						}, { nextModal: null, currModal })
 
 						if (!MODAL_RESULT.nextModal) {
 							yield MODAL_RESULT; return
@@ -141,9 +179,9 @@ export default {
 					const { currModal } = result
 					MODALS_HELL.unshift(currModal)
 				}
-
+				
 				MODALS_HELL.forEach((curr, i) => {
-					if (this.stateModals.map(modal => modal.name === curr.name)) {
+					if (curr && this.stateModals.find(modal => modal.name === curr.name)) {
 						const INDEX_MODAL_IN_STATE = this.stateModals.findIndex(modal => modal.name === curr.name)
 
 						setTimeout(() => {
@@ -157,18 +195,21 @@ export default {
 									.lastIndexOf(true)
 
 								if (CURR_ACTIVE_INDEX !== -1) {
-									this.stateModals[CURR_ACTIVE_INDEX].isActive = true
-									const REF = this.stateModals[CURR_ACTIVE_INDEX].$refs,
-										NEXT_ELEMENT = REF[Object.keys(REF)]
+									const NEXT_INSTANCE = this.stateModals[CURR_ACTIVE_INDEX]
 
-									NEXT_ELEMENT.focus()
+									// const REF = this.stateModals[CURR_ACTIVE_INDEX].$el,
+									// 	NEXT_ELEMENT = REF[Object.keys(REF)]
+									
+									NEXT_INSTANCE.isActive = true
+									NEXT_INSTANCE.$el.focus()
 								}
 
 								resolve()
 
 							})).then(() => {
+								this.clearNode(curr.name)
 								this.clearComments()
-								f_cb()
+								callback()
 							})
 
 						}, i * 100)
@@ -177,6 +218,13 @@ export default {
 				})
 			}
 
+			clearNode(name) {
+				setTimeout(() => {
+					const nodeModal = document.querySelector(`[name=${name}]`)
+					if (nodeModal) nodeModal.remove()
+				}, 450)
+			}
+			
 			clearComments() {
 				if (this.modalContainer.firstChild) {
 					this.modalContainer.childNodes.forEach(curr => {
@@ -188,9 +236,9 @@ export default {
 			}
 		}
 
-		Vue.prototype.$iziModal = new Modal(MODAL_CONTAINER)
+		Vue.prototype.$ = new Modal(MODAL_CONTAINER)
 		Vue.prototype.$iziDialog = new Dialog
 
-		Vue.component('izi-modal', IModal)
+		Vue.component(options.name, IModal)
 	}
 }

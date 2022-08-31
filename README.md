@@ -1,35 +1,51 @@
-# izi-modal-component
+# modal-component
 
-### Install
-```
-npm i inowave-izi-modal-component@git+https://repo.izibook.ru/scm/wvm/izi-modal-component.git
 ```
 ### main.js
 ```js
-import iziModal from 'inowave-izi-modal-component'
-Vue.use(iziModal)
+Vue.use(vmodal) || Vue.use(vmodal, { name: 'template-name' })
 ```
 
 ## Modal config:
-| Name 					| Type 							| Default 			| Description 	|
-| ---- 					| :--: 							| :-----: 			| ----------- 	|
-| ***name** 			| `String` 						| **''** 			| Название, открытие/закрытие модального окна зависит от этого имени, обязательный параметр  |
-| headerTitle 			| `String` 						| **''** 			| Название в шапке |
-| header 				| `Boolean` 					| **true** 			| Показывать верхний блок шапки |
-| buttonClose 			| `Boolean` 					| **true** 			| Показывать кнопку (крест) закрытия модального окна |
-| layer	 				| `Boolean` 					| **true** 			| Показывать внешний слой (background) модалки |
-| layerClickToClose 	| `Boolean` 					| **false** 		| Не закрывать модальное окно по клику на внешний слой модалки |
-| draggable 			| `Boolean`						| **false** 		| Отключить перемещения модального окна (drag'n'drop работает только по шапке) |
-| left 					| `[Number, String]` 		| **50** 			| Первоначальное положение модалки по оси X, если не указано, то растоположежние устанавливается по центру отностильно окна  |
-| top 					| `[Number, String]` 		| **50** 			| Первоначальное положение модалки по оси Y, если не указано, то растоположежние устанавливается по центру отностильно окна  |
-| width 					| `[Number, String]` 		| **1000** 			| Ширина модального окна |
-| minWidth 				| `[Number, String]` 		| **400** 			| Минамальная ширина модального окна |
-| height 				| `[Number, String]` 		| **800** 			| Высота модального окна |
-| minHeight 			| `[Number, String]` 		| **200** 			| Минамальная высота модального окна |
-| padding 				| `[Number, String]` 		| **100** 			| Padding для тела модального окна |
-| transition 			| `String` 						| **default** 		| Имя текущей анимации, в коллекции есть ['default', 'rotate'] |
-| beforeOpen 			| `Function` 					| **() => true** 	| Возможность определеить какую-либо логику до открытия модалки или вовсе запретить открытие |
-| beforeClose 			| `Function` 					| **() => true** 	| Возможность определеить какую-либо логику до закрытия модалки или вовсе отменить закрытие |
+| Name 						| Type 							| Default 			| Description 	|
+| ---- 						| :--: 							| :-----: 			| ----------- 	|
+| ***name** 				| `String` 						| **''** 			| Название, открытие/закрытие модального окна зависит от этого имени, обязательный параметр  |
+| headerTitle 				| `String` 						| **''** 			| Название в шапке |
+| header 					| `Boolean` 					| **true** 			| Показать верхний блок шапки |
+| buttonClose 				| `Boolean` 					| **true** 			| Показать кнопку (крест) закрытия модального окна |
+| closeButtonPosition 	| `String` 						| **right** 		| Позиция отображения кнопки закрытия, 'left' || 'right' |
+| layer	 					| `Boolean` 					| **true** 			| Показать внешний слой (background) модалки |
+| layerClickToClose 		| `Boolean` 					| **true** 			| Закрыть модальное окно по клику на внешний слой модалки |
+| draggable 				| `Boolean`						| **false** 		| Включить перемещения модального окна (drag'n'drop работает только по шапке) |
+| scrollable 				| `Boolean`						| **false** 		| Включить скролл для контента |
+| calcContent 				| `Boolean` 					| **false** 		| Расчитать минимальную ширину и высоту для контента модалки (расчет идет исходя из ширины и высоты самого контера со смещением до нужного размера, что бы не было размытия) |
+| left 						| `[Number, String]` 		| **50** 			| Первоначальное положение по оси X, если не указано, то расположежние устанавливается по центру отностильно окна  |
+| top 						| `[Number, String]` 		| **50** 			| Первоначальное положение по оси Y, если не указано, то расположежние устанавливается по центру отностильно окна  |
+| width 						| `[Number, String]` 		| **'auto'** 		| Ширина модального окна (px) |
+| height 					| `[Number, String]` 		| **'auto'** 		| Высота модального окна (px) |
+| padding 					| `[Number, String]` 		| **100** 			| Padding для тела модального окна |
+| transition 				| `String` 						| **default** 		| Имя текущей анимации, в коллекции есть ['default', 'rotate'] |
+| isMobileMode 			| `Boolean` 					| **true** 			| Включить мобильный режим |
+| beforeOpen 				| `Function` 					| **() => true** 	| Возможность определеить какую-либо логику до открытия модалки или вовсе запретить открытие |
+| beforeClose 				| `Function` 					| **() => true** 	| Возможность определеить какую-либо логику до закрытия модалки или вовсе отменить закрытие |
+
+### $events:
+```js
+	// Модальное окно открылось
+	this.$emit('opened', $event)
+
+	// Модальное окно закрылось
+	this.$emit('closed', $event)
+
+	// Модальное окно открыто и активно
+	this.$emit('active', { name, active })
+
+	// Возврат координат модального окна, после перемещения
+	this.$emit('drag-coords', { x, y })
+
+	// Возвращает высоту модального окна
+	this.$emit('body-height', value)
+```
 
 #### Example
 ```html
@@ -54,9 +70,11 @@ Vue.use(iziModal)
 ```
 ```javascript
 	// Открыть модальное окно
-	this.$iziModal.open('services')
+	this.$vmodal.open(name* = '', callback = () => ({}))
 	// Закрыть модальное окно
-	this.$iziModal.close('services')
+	this.$vmodal.close(name* = '')
+	// Для включения диалога при закрытии модалки для кастомной кнопки закрытия, нужно добавить параметр { dialog: true } или true
+	this.$vmodal.close(name* = '', dialog = false, callback = () => ({}))
 ```
 ## Dialog config:
 | Name 					| Type 							| Default 			| Description 													|
@@ -94,7 +112,7 @@ Vue.use(iziModal)
 				{ title: 'Да', result: true },
 				{ title: 'Нет', result: false, color: true , locked: false },
 				{ title: 'Может быть', result: 'maybe' }
-			] 
+			]
 		})
 	}
 ```

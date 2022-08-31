@@ -8,23 +8,31 @@
 			:name="name"
 			:ref="name"
 			:class="setClassActiveLayerModal"
-			:style="setStylePositionLevelLayerModal"
+			:style="[setStylePositionLevelLayerModal, createVariablePositionModal]"
 			tabindex="0"
-			@keyup.esc="close"
-			@mousedown="layerClickToClose ? close() : false"
+			@keyup.esc="close($event)"
+			@mousedown="layerClickToClose ? close($event) : false"
 		>
 
 			<div class="i-modal-container i-modal-layer__i-modal-container"
-				:style="[setStylePositionContainerModal, setStylePositionLevelModal]"
+				:ref="containerRef"
+				:style="[
+					setStylePositionLevelModal,
+					setStylePositionContainerModal,
+					{ '--border-radius': isMobileMode ? '0' : '12px' }
+				]"
 				:class="setClassActiveContainerModal"
 				@mousedown.stop="activate($event.target)"
 			>
 				<div class="i-modal-content i-modal-layer__i-modal-content"
+					:ref="contentRef"
 					:class="setClassActiveContentModal"
 				>
 					<div v-show="header"
 						class="i-modal-header i-modal-content__i-modal-header"
+						:ref="headerRef"
 						:class="{ 'i-modal-header--draggable': draggable }"
+						:style="setStylePositionPadding"
 						@mousedown="draggable ? grab($event) : false"
 						@mouseup="draggable ? leave() : false"
 					>
@@ -37,6 +45,7 @@
 
 						<span v-show="buttonClose"
 							class="i-header-close i-modal-header__i-header-close"
+							:style="[setStyleHeaderTop, setStylePositionButtonClose]"
 							@click="close"
 							@mousedown.stop=""
 						>
@@ -46,9 +55,11 @@
 					<div class="i-modal-body i-modal-content__i-modal-body"
 						:class="{ 'i-modal-body--radius': header }"
 						:style="setStyleBody"
+						:ref="bodyRef"
 					>
 						<span v-show="buttonClose && !header"
 							class="i-body-close i-modal-body__i-body-close"
+							:style="setStylePositionButtonClose"
 							@click="close"
 						>
 							<c-close />
@@ -66,7 +77,7 @@
 	import CClose from './components/svg/c-close'
 
 	export default {
-		name: `iziModal`,
+		name: ``,
 		components: { CClose },
 		props: {
 			name: String,
@@ -90,6 +101,10 @@
 				type: Boolean,
 				default: true
 			},
+			closeButtonPosition: {
+				type: String,
+				default: 'right'
+			},
 			draggable: {
 				type: Boolean,
 				default: false
@@ -104,27 +119,31 @@
 			},
 			width: {
 				type: [Number, String],
-				default: 1000
+				default: 'auto'
 			},
 			height: {
 				type: [Number, String],
-				default: 800
-			},
-			minWidth: {
-				type: [Number, String],
-				default: 400
-			},
-			minHeight: {
-				type: [Number, String],
-				default: 200
+				default: 'auto'
 			},
 			padding: {
 				type: [Number, String],
 				default: 32
 			},
+			zIndex: {
+				type: [Number, String],
+				default: 1000
+			},
+			scrollable: {
+				type: Boolean,
+				default: false,
+			},
 			transition: {
 				type: String,
-				default: 'rotate'
+				default: 'default'
+			},
+			isMobileMode: {
+				type: Boolean,
+				default: true
 			},
 			beforeOpen: {
 				type: Function,
@@ -136,30 +155,43 @@
 			},
 		},
 		data: () => ({
+			bodyRef: '',
+			headerRef: '',
+			containerRef: '',
 			type: 'Modal',
 			isShow: false,
 			isActive: false,
 			index: 0,
-			zIndex: 999,
 			isGrab: false,
-			units: '%',
 			fTop: 0,
 			fLeft: 0,
 			offsetTop: 0,
 			offsetLeft: 0,
-			defaultWidth: 1000,
-			defaultHeight: 800,
+			timeID: null,
 			headerHeight: 0,
+			initWidth: 0,
+			initHeight: 0,
+			totalWidth: 0,
+			totalHeight: 0,
+			pageWidth: 0,
+			pageHeight: 0,
+			initContentWidth: 0,
+			initContentHeight: 0,
 		}),
 		computed: {
+			isUsedModal() {
+				return this.isActive && this.isShow
+			},
+			isSetCoords() {
+				const props = this.$options.propsData
+				return typeof (props?.top && props?.left) === 'number'
+			},
 			setStylePositionContainerModal() {
 				return {
-					top: `${this.fTop}${this.units}`,
-					left: `${this.fLeft}${this.units}`,
-					width: `${this.width % 2 ? this.width - 1 : this.width}px`,
-					height: `${this.height % 2 ? this.height - 1 : this.height}px`,
-					minWidth: `${this.minWidth}px`,
-					minHeight: `${this.minHeight}px`,
+					top: `${this.fTop}px`,
+					left: `${this.fLeft}px`,
+					width: this.totalWidth ? `${this.totalWidth}px` : 'auto',
+					height: this.totalHeight ? `${this.totalHeight}px` : 'auto'
 				}
 			},
 			setStylePositionLevelModal() {
@@ -169,13 +201,34 @@
 				if (this.layer)
 					return { zIndex: `${this.zIndex + (this.index - 1)}` }
 			},
+			createVariablePositionModal() {
+				return {
+					'--entryHeight': `${this.pageHeight + this.totalHeight}px`
+				}
+			},
 			setStyleBody() {
 				return {
 					padding: String(this.padding).split(' ').map(p => `${p}px`).join(' '),
 					height: this.header
-						? { height: `calc(100% - ${this.headerHeight})` }
-						: { height: '100%' }
+						? `calc(100% - ${this.headerHeight}px)`
+						: '100%',
+					overflow: this.scrollable ? 'auto' : 'hidden'
 				}
+			},
+			setStyleHeaderTop() {
+				return { top: this.headerHeight > 50 ? '20px' : `${(this.headerHeight / 2) - 12.5}px` }
+			},
+			setStylePositionButtonClose() {
+				return this.closeButtonPosition === 'left'
+					? { left: '20px' }
+					: { right: '20px' }
+			},
+			setStylePositionPadding() {
+				if (!this.buttonClose) return null
+				
+				return this.closeButtonPosition === 'left'
+					? { paddingLeft: '64px' }
+					: { paddingRight: '64px' }
 			},
 			setClassActiveContainerModal() {
 				return { 'i-modal-container--active': this.isActive }
@@ -190,11 +243,10 @@
 		methods: {
 			activate(target) {
 				if(target.tagName === 'BUTTON') return
-				this.$iziModal.active(this.name)
+				this.$.active(this.name)
 			},
 			grab(e) {
 				this.isGrab = true;
-				this.units = 'px';
 				this.offsetTop = e.layerY;
 				this.offsetLeft = e.layerX;
 				this.fTop = e.clientY - e.layerY
@@ -202,35 +254,128 @@
 			},
 			leave() {
 				this.isGrab = false;
+				this.$emit('drag-coords', { x: this.fLeft, y: this.fTop })
 			},
-			async close() {
-				const { key } = event
+			async close(e) {
+				const { key } = e
 				const isDialog = this.isActive
 					? await this.beforeClose()
 					: false
 
-				if (!this.isActive) this.$iziModal.active(this.name)
+				if (!this.isActive) this.$.active(this.name)
 				if (isDialog || isDialog === undefined || typeof isDialog === 'string') {
-					this.$iziModal.close(this.name)
+					this.$.totalClose(this.name)
 				} else {
 					if (this.$refs[this.name] && key === 'Escape') {
 						this.$refs[this.name].focus()
 					}
 				}
 			},
+			async setAdaptiveModal() {
+				const bodyNode = this.$refs[this.bodyRef]
+					, isMobile = innerWidth <= 768 && this.isMobileMode
+
+				this.pageWidth = innerWidth
+				this.pageHeight = innerHeight
+
+				if (isMobile) {
+					this.totalWidth = innerWidth
+					this.totalHeight = innerHeight
+				} else {
+					this.totalWidth = this.width !== 'auto'
+						? this.initWidth > innerWidth
+							? innerWidth
+							: this.initWidth
+						: null
+					this.totalHeight = this.height !== 'auto' ? this.initHeight : null
+				}
+
+				if (this.isSetCoords) {
+					this.fLeft = isMobile
+						? 0
+						: innerWidth - this.initWidth <= +this.left
+							? innerWidth - this.initWidth
+							: +this.left
+					this.fTop = isMobile ? 0 : +this.top
+				} else {
+					await this.$nextTick()
+
+					const contentNode = this.$refs[this.contentRef]
+						,	contentWidth = contentNode.offsetWidth
+						,  contentHeight = contentNode.offsetHeight
+					
+					this.fLeft = isMobile
+						? 0
+						: this.initWidth > innerWidth
+							? 0
+							: (innerWidth - this.initWidth) / 2
+					this.fTop = isMobile
+						? 0 : (innerHeight - contentHeight) / 2
+				}
+
+				Promise.resolve().then(() =>  this.$emit('body-height', bodyNode.offsetHeight))
+			}
 		},
 		watch: {
 			async isShow(show) {
+				await this.$nextTick()
+
 				if (show) {
-					await this.$nextTick()
-					this.headerHeight = getComputedStyle(document.querySelector('.i-modal-header')).height
+					const {
+						containerWidth,
+						containerHeight
+					} = await Promise.resolve()
+							.then(() => {
+								const containerNode = this.$refs[this.containerRef]
+								return {
+									containerWidth: containerNode.offsetWidth,
+									containerHeight: containerNode.offsetHeight
+								}
+							})
+
+					const headerNode = this.$refs[this.headerRef]
+
+					this.initWidth = this.width !== 'auto' ? this.width : containerWidth
+					this.initHeight = this.height !== 'auto' ? this.height : containerHeight
+					this.headerHeight = headerNode.offsetHeight
+
+					if (this.isSetCoords) {
+						this.fLeft = +this.left
+						this.fTop = +this.top
+					}
+
+					this.setAdaptiveModal()
 				}
+			},
+			isUsedModal(active) {
+				this.$emit('active', { name: this.name, active })
+			},
+			name(name) {
+				this.$.created(this, this.name)
 			}
 		},
 		created() {
-			this.$iziModal.created(this, this.name)
-			this.fTop = +this.top
-			this.fLeft = +this.left
+			this.bodyRef = `body-ref:${String(Math.random()).slice(2, 10)}`
+			this.headerRef = `header-ref:${String(Math.random()).slice(2, 10)}`
+			this.contentRef = `header-ref:${String(Math.random()).slice(2, 10)}`
+			this.containerRef = `body-ref:${String(Math.random()).slice(2, 10)}`
+			
+
+			this.$.created(this, this.name)
+			
+			window.addEventListener('resize', ({ target }) => {
+				if (this.isShow) {
+					clearInterval(this.timeID)
+					this.timeID = setTimeout(() => this.setAdaptiveModal())
+				}
+			})
+
+			// Закрываем модальное окно, при изменение location href
+			window.addEventListener('popstate', () => {
+				if (this.isShow) {
+					this.$.totalClose(this.name)
+				}
+			})
 
 			document.body.addEventListener('mousemove', e => {
 				if (this.isGrab) {
@@ -238,7 +383,13 @@
 					this.fLeft = e.clientX - this.offsetLeft
 				}
 			})
+
 		},
+		beforeDestroy() {
+			if (this.isShow) {
+				this.$.totalClose(this.name)
+			}
+		}
 	}
 </script>
 
@@ -248,7 +399,7 @@
 		
 		&__i-modal-container {
 			position: fixed;
-			transform: translate(-50%, -50%) perspective(1000px) rotateX(0deg);
+			transform: perspective(1000px) rotateX(0deg);
 		}
 
 		&--active {
@@ -276,16 +427,24 @@
 			box-shadow: 0px 20px 70px rgba(32, 31, 54, .7);
 			filter: blur(0);
 		}
+
+		@media screen and (max-width: 768px) {
+			& { border-radius: var(--border-radius); }
+		}
 	}
 
 	.i-modal-content {
-		height: inherit;
+		height: 100%;
 		opacity: .3;
 		
 		&--active {
 			opacity: 1;
 		}
 	}
+
+	// .body-content {
+	// 	width: fit-content;
+	// }
 
 	.i-modal-header {
 		width: 100%;
@@ -294,7 +453,6 @@
 		position: relative;
 		font-weight: bold;
 		border-bottom: 2px solid #eeedf7;
-		padding-right: 64px;
 		border-top-left-radius: 4px;
 		border-top-right-radius: 4px;
 		display: flex;
@@ -316,8 +474,6 @@
 		}
 		&__i-header-close {
 			position: absolute;
-			top: 20px;
-			right: 20px;
 
 			&:hover {
 				filter: brightness(0);
@@ -340,10 +496,10 @@
 		cursor: pointer;
 	}
 	.i-modal-body {
+		width: 100%;
 		height: 100%;
 		position: relative;
 		border-radius: 12px;
-		overflow: auto;
 
 		&--radius {
 			border-top-right-radius: 0;
@@ -352,7 +508,6 @@
 		&__i-body-close {
 			position: absolute;
 			top: 20px;
-			right: 20px;
 			z-index: 10;
 
 			&:hover {
@@ -363,6 +518,10 @@
 					100% { transform: scale(1.1) rotate(90deg) }
 				}
 			}
+		}
+
+		@media screen and (max-width: 768px) {
+			& { border-radius: 0px; }
 		}
 	}
 
@@ -383,25 +542,25 @@
 	.default-enter-active .i-modal-container {
 		animation: .4s default-enter;
 		@keyframes default-enter {
-			0% { transform: translate(-50%, 100vh); }
+			0% { top: var(--entryHeight) }
 		}
 	}
 	.rotate-enter-active .i-modal-container {
 		animation: .4s rotate-enter;
 		@keyframes rotate-enter {
-			0% { transform: translate(-50%, -50%) perspective(1000px) rotateY(-90deg); }
+			0% { transform: perspective(1000px) rotateY(-90deg); }
 		}
 	}
 	.default-leave-active .i-modal-container {
 		animation: .4s default-leave;
 		@keyframes default-leave {
-			100% { transform: translate(-50%, -100vh); }
+			100% { top: var(--entryHeight) }
 		}
 	}
 	.rotate-leave-active .i-modal-container {
 		animation: .4s rotate-leave;
 		@keyframes rotate-leave {
-			100% { transform: translate(-50%, -100vh) perspective(1000px) rotateX(-90deg); }
+			100% { transform: perspective(1000px) rotateX(-90deg); }
 		}
 	}
 </style>
